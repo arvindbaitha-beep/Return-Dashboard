@@ -384,21 +384,28 @@ document.getElementById('testSheet').addEventListener('click', async ()=>{
 
 function syncToSheet(row){
   if(!sheetWebAppUrl) return;
-  fetch(sheetWebAppUrl, {
-    method: 'POST',
-    headers: {'Content-Type': 'text/plain;charset=utf-8'},
-    body: JSON.stringify({...row, warehouse: warehouseName, sessionId: sessionIdVal})
-  }).then(res => res.json()).then(json => {
-    if(json.status === 'ok'){
-      syncState.textContent = 'Sheet: Live ✅';
-      syncState.className = 'sync-state on';
-    } else if(json.status === 'duplicate'){
-      // already handled client-side
-    }
-  }).catch(()=>{
-    syncState.textContent = 'Sheet: Sync Error ❌';
-    syncState.className = 'sync-state err';
+  const params = new URLSearchParams({
+    action: 'save',
+    brand: row.brand,
+    courier: row.courier,
+    id: row.id,
+    time: row.time,
+    warehouse: warehouseName,
+    sessionId: sessionIdVal
   });
+  const url = sheetWebAppUrl + '?' + params.toString();
+  fetch(url)
+    .then(res => res.json())
+    .then(json => {
+      if(json.status === 'ok'){
+        syncState.textContent = 'Sheet: Live ✅';
+        syncState.className = 'sync-state on';
+      }
+    })
+    .catch(()=>{
+      syncState.textContent = 'Sheet: Sync Error ❌';
+      syncState.className = 'sync-state err';
+    });
 }
 
 document.getElementById('sessionId').textContent = sessionIdVal;

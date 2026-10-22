@@ -7,53 +7,75 @@
 <title>Return Receiving</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
   :root{
-    --bg:#0e1410; --panel:#141c17; --panel-2:#19231c; --line:#2a382f;
-    --ink:#eef3ec; --ink-dim:#9fb0a3; --accent:#ffb020; --good:#4fd17c; --bad:#ff5d5d;
-    --c1:#ff8a3d; --c2:#4fd1c5; --c3:#a78bfa; --c4:#60a5fa; --c5:#f472b6; --c6:#4fd17c; --c7:#fbbf24; --c8:#fb7185;
+    --bg:#f2f5fd; --panel:#ffffff; --panel-2:#f1f4fb; --line:#d9e1f1;
+    --ink:#1b2440; --ink-dim:#5b6786; --accent:#ff6b35; --good:#16a34a; --bad:#e11d48;
+    --c1:#ea580c; --c2:#0d9488; --c3:#7c3aed; --c4:#2563eb; --c5:#db2777; --c6:#16a34a; --c7:#d97706; --c8:#dc2626;
     --mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
     --sans:'Inter','Segoe UI',system-ui,sans-serif;
   }
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%;}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);min-height:100vh;}
+  body{margin:0;background:linear-gradient(160deg,#e8f0ff 0%,#fdeefa 45%,#fff4e2 100%) fixed;color:var(--ink);font-family:var(--sans);min-height:100vh;}
   .wrap{max-width:1180px;margin:0 auto;padding:18px 16px 70px;}
   [hidden]{display:none !important;}
 
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 18px;margin-bottom:14px;border-radius:14px;background:linear-gradient(120deg,#312e81 0%,#9d174d 60%,#c2410c 100%);color:#fff;box-shadow:0 8px 24px rgba(49,46,129,.35);}
   .brand-block{display:flex;align-items:center;gap:12px;}
-  .logo-mark{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 12px;}
+  .logo-mark{display:flex;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:7px 12px;color:#1b2440;}
   .logo-mark img{width:28px;height:28px;border-radius:6px;object-fit:contain;}
   .logo-text{font-weight:800;font-size:16px;}
   h1{margin:0;font-size:21px;font-weight:700;letter-spacing:-.01em;}
-  .whtag{display:inline-block;margin-top:4px;font-family:var(--mono);font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--c4),var(--c2));color:#0e1410;padding:2px 10px;border-radius:20px;}
+  .whtag{display:inline-block;margin-top:4px;font-family:var(--mono);font-size:11px;font-weight:700;background:#fff;color:#4f46e5;padding:2px 10px;border-radius:20px;}
   .who{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;}
 
-  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto;}
-  .tab{background:none;border:none;color:var(--ink-dim);font:600 14px var(--sans);padding:11px 16px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
-  .tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+  .layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:18px;align-items:start;}
+  .side{display:flex;flex-direction:column;gap:10px;position:sticky;top:14px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;box-shadow:0 2px 10px rgba(40,60,120,.06);}
+  .side-title{font:800 11px var(--mono);letter-spacing:.12em;color:var(--ink-dim);padding:2px 8px 6px;}
+  .tab{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--t,#3730a3);border:2px solid transparent;color:#fff;font:700 14px var(--sans);padding:13px 14px;cursor:pointer;border-radius:10px;white-space:nowrap;}
+  .tab i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.55);flex:none;}
+  .tab:hover{filter:brightness(1.12);}
+  .tab.on{border-color:#fff;box-shadow:0 0 0 3px var(--t,#3730a3),0 6px 14px rgba(0,0,0,.28);transform:translateX(4px);}
+  .tab.on i{background:#fff;}
+  .mbanner{background:linear-gradient(120deg,#eef2ff,#fdf2f8);border:2px solid #5b21b6;}
+  .mlabel{font:800 11px var(--mono);letter-spacing:.12em;color:#5b21b6;}
+  .mid-big{font:800 22px var(--mono);color:#312e81;word-break:break-all;margin:2px 0 6px;}
+  .mstats{display:flex;gap:18px;}
+  .mstats div{display:flex;flex-direction:column;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 16px;}
+  .mstats b{font:800 24px var(--mono);color:#be185d;} .mstats span{font-size:11px;color:var(--ink-dim);font-weight:600;}
+  .step-title{font:800 13px var(--sans);color:#fff;background:linear-gradient(120deg,#312e81,#6d28d9);padding:10px 14px;border-radius:8px;margin-bottom:12px;}
+  select.miss{border-color:#e11d48;box-shadow:0 0 0 3px #fecdd3;}
+  .rsel{padding:4px 6px;font-size:12px;min-width:96px;}
+  select:disabled,input:disabled{opacity:.55;cursor:not-allowed;}
+  .alert-overlay{z-index:100;background:rgba(127,29,29,.72);}
+  .alert-box{border:4px solid #e11d48;text-align:center;max-width:460px;}
+  .alert-icon{width:64px;height:64px;margin:0 auto 8px;border-radius:50%;background:#e11d48;color:#fff;font:800 40px var(--sans);display:flex;align-items:center;justify-content:center;}
+  .alert-box h2{color:#e11d48;font-size:22px;letter-spacing:.04em;}
+  .alert-awb{font:800 22px var(--mono);background:#ffe4e6;border:1px solid #fda4af;border-radius:8px;padding:10px;margin:10px 0;word-break:break-all;color:#9f1239;}
+  .alert-box p{color:var(--ink);font-size:14px;margin:6px 0;}
+  .alert-note{color:var(--ink-dim) !important;font-size:12px !important;}
+  .alert-ok{width:100%;padding:16px;font-size:16px;margin-top:10px;}
   .tab:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
   .field{display:flex;flex-direction:column;gap:5px;min-width:0;}
   .field label{font-size:11px;color:var(--ink-dim);font-family:var(--mono);letter-spacing:.04em;}
   select,input[type=text],input[type=date],input[type=number],input[type=email],textarea{
-    background:var(--panel-2);border:1px solid var(--line);color:var(--ink);padding:10px 11px;border-radius:7px;font-family:var(--mono);font-size:14px;max-width:100%;
+    background:#fff;border:1px solid var(--line);color:var(--ink);padding:10px 11px;border-radius:7px;font-family:var(--mono);font-size:14px;max-width:100%;
   }
   select{min-width:150px;}
-  select:focus,input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  select:focus,input:focus,textarea:focus{outline:2px solid #4f46e5;outline-offset:1px;}
   .add-row{display:flex;gap:6px;}
-  .add-btn{background:var(--panel-2);color:var(--accent);border:1px solid var(--line);border-radius:7px;width:38px;font-size:18px;font-weight:700;cursor:pointer;}
+  .add-btn{background:#fff;color:var(--accent);border:1px solid var(--line);border-radius:7px;width:38px;font-size:18px;font-weight:700;cursor:pointer;}
   .add-btn:hover{border-color:var(--accent);}
 
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 2px 10px rgba(40,60,120,.06);}
   .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
   .grow{flex:1;min-width:200px;}
 
-  .scan-bar{border-left:4px solid var(--accent);}
+  .scan-bar{border-left:6px solid #312e81;}
   .scan-bar.bad{border-left-color:var(--bad);}
   .scan-bar.good{border-left-color:var(--good);}
   #scanInput{width:100%;font-size:20px;padding:14px 14px;letter-spacing:.03em;text-transform:uppercase;}
@@ -64,35 +86,35 @@
   .switch{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-dim);font-family:var(--mono);cursor:pointer;user-select:none;}
   .switch input{width:18px;height:18px;accent-color:var(--accent);}
 
-  .btn{background:var(--panel-2);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:10px 14px;font:600 13px var(--sans);cursor:pointer;}
+  .btn{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:10px 14px;font:600 13px var(--sans);cursor:pointer;}
   .btn:hover{border-color:var(--ink-dim);}
-  .btn.primary{background:var(--accent);color:#1a1404;border-color:var(--accent);}
+  .btn.primary{background:linear-gradient(120deg,#ff6b35,#ec4899);color:#fff;border-color:transparent;}
   .btn.primary:hover{filter:brightness(1.08);}
-  .btn.danger{color:var(--bad);border-color:rgba(255,93,93,.4);}
+  .btn.danger{color:var(--bad);border-color:#fda4af;}
   .btn.sm{padding:6px 10px;font-size:12px;}
   .btn:disabled{opacity:.5;cursor:not-allowed;}
   .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
 
-  #camWrap{margin-top:12px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#000;}
+  #camWrap{margin-top:12px;border:2px solid #8b5cf6;border-radius:12px;overflow:hidden;background:#f5f0ff;}
   #camReader{width:100%;max-width:520px;margin:0 auto;}
-  .cam-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--panel-2);font-size:12px;color:var(--ink-dim);font-family:var(--mono);}
+  .cam-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#c4b5fd;font-size:12px;color:var(--ink-dim);font-family:var(--mono);}
 
   .flash{font-family:var(--mono);font-size:13px;padding:9px 14px;border-radius:7px;margin-bottom:12px;display:none;}
   .flash.show{display:block;}
-  .flash.ok{background:rgba(79,209,124,.12);border:1px solid rgba(79,209,124,.4);color:var(--good);}
-  .flash.dup{background:rgba(255,93,93,.12);border:1px solid rgba(255,93,93,.4);color:var(--bad);}
+  .flash.ok{background:#dcfce7;border:1px solid #86efac;color:#166534;}
+  .flash.dup{background:#ffe4e6;border:1px solid #fda4af;color:#9f1239;}
 
   .chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0;}
-  .chip{font-family:var(--mono);font-size:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:20px;padding:4px 12px;}
-  .chip b{color:var(--accent);}
+  .chip{font-family:var(--mono);font-size:12px;background:#ede9fe;border:1px solid #c4b5fd;border-radius:20px;padding:4px 12px;}
+  .chip b{color:#c2410c;}
 
   .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px;}
-  .kpi{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--k,var(--c4));border-radius:10px;padding:14px 16px;}
-  .kpi .n{font-family:var(--mono);font-size:28px;font-weight:700;color:var(--k,var(--c4));}
-  .kpi .l{font-size:12px;color:var(--ink-dim);margin-top:2px;}
+  .kpi{background:var(--k,var(--c4));border-radius:14px;padding:14px 16px;color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.12);}
+  .kpi .n{font-family:var(--mono);font-size:28px;font-weight:700;color:#fff;}
+  .kpi .l{font-size:12px;color:rgba(255,255,255,.92);margin-top:2px;font-weight:600;}
 
   .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-bottom:16px;}
-  .panel h3{margin:0 0 12px;font-size:14px;font-weight:700;}
+  .panel h3,.card > h3{margin:0 0 12px;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#312e81,#6d28d9);padding:10px 14px;border-radius:8px;}
   .brow{display:grid;grid-template-columns:minmax(80px,32%) 1fr auto;gap:10px;align-items:center;padding:5px 0;font-size:13px;}
   .brow .bn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .bt{background:var(--panel-2);border-radius:6px;height:12px;overflow:hidden;}
@@ -111,31 +133,34 @@
 
   .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
   table{width:100%;border-collapse:collapse;background:var(--panel);}
-  thead th{text-align:left;font-size:12px;color:var(--ink-dim);padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel-2);white-space:nowrap;}
-  tbody td{padding:9px 12px;font-size:13px;border-bottom:1px solid var(--line);font-family:var(--mono);}
+  thead th{text-align:left;font-size:12px;color:#fff;padding:10px 12px;border-bottom:1px solid var(--line);background:linear-gradient(120deg,#312e81,#5b21b6);white-space:nowrap;}
+  tbody td{color:var(--ink);padding:9px 12px;font-size:13px;border-bottom:1px solid var(--line);font-family:var(--mono);}
   tbody tr:last-child td{border-bottom:none;}
   td.r,th.r{text-align:right;}
   .empty{padding:30px 16px;text-align:center;color:var(--ink-dim);font-family:var(--mono);font-size:13px;}
   .awbs{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;background:var(--panel-2);}
   .awbs span{font-family:var(--mono);font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:2px 8px;}
-  .awbs span.hit{border-color:var(--accent);color:var(--accent);}
-  .tag{font-size:11px;font-weight:700;border-radius:20px;padding:2px 9px;background:rgba(255,176,32,.15);color:var(--accent);}
+  .awbs span.hit{border-color:var(--accent);color:var(--accent);background:#fff1ea;}
+  .tag{font-size:11px;font-weight:700;border-radius:20px;padding:2px 9px;background:#ffedd5;color:#c2410c;}
   .x-btn{background:none;border:none;color:var(--bad);cursor:pointer;font-size:16px;}
 
-  .sync{font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(79,209,124,.15);color:var(--good);}
-  .sync.err{background:rgba(255,93,93,.15);color:var(--bad);}
+  .sync{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;background:#dcfce7;color:#166534;font-weight:700;}
+  .sync.err{background:#ffe4e6;color:#9f1239;}
 
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;}
+  .overlay{position:fixed;inset:0;background:rgba(27,36,64,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;}
   .modal{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;max-width:520px;width:100%;max-height:90vh;overflow:auto;}
   .modal h2{margin:0 0 6px;font-size:18px;}
   .modal p{color:var(--ink-dim);font-size:13px;margin:6px 0 14px;}
   .dl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0;}
   .dl-grid .btn{padding:16px 8px;text-align:center;font-size:14px;}
   .mid{font-family:var(--mono);font-size:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 10px;margin:4px 0;display:flex;justify-content:space-between;gap:10px;}
-  .warnbox{background:rgba(255,93,93,.1);border:1px solid rgba(255,93,93,.35);color:var(--bad);border-radius:8px;padding:8px 12px;font-size:12px;margin:8px 0;}
+  .warnbox{background:#ffe4e6;border:1px solid #fda4af;color:#9f1239;border-radius:8px;padding:8px 12px;font-size:12px;margin:8px 0;}
   .hint{font-size:12px;color:var(--ink-dim);line-height:1.6;}
   .mail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;}
 
+  @media (max-width:860px){
+    .layout{grid-template-columns:1fr;} .side{flex-direction:row;overflow-x:auto;position:static;padding:8px;} .side-title{display:none;} .tab{width:auto;} .tab.on{transform:none;}
+  }
   @media (max-width:600px){
     h1{font-size:17px;} .kpi .n{font-size:22px;} .dl-grid{grid-template-columns:1fr;}
     select{min-width:0;width:100%;} .field{flex:1 1 140px;} #scanInput{font-size:18px;}
@@ -155,25 +180,27 @@
       </div>
     </div>
     <div class="who">
-      <div class="field"><label for="userName">Scanned By (aapka naam)</label><input type="text" id="userName" maxlength="40" placeholder="Naam likho" autocomplete="off" style="width:180px"></div>
       <span class="sync" id="syncBadge">Loading...</span>
     </div>
   </div>
 
-  <div class="tabs" id="tabs">
-    <button class="tab on" data-tab="scan">Scan</button>
-    <button class="tab" data-tab="dash">Dashboard</button>
-    <button class="tab" data-tab="hist">History / Reprint</button>
-    <button class="tab" data-tab="set">Settings &amp; Mail</button>
-  </div>
+  <div class="layout">
+  <aside class="side" id="tabs">
+    <div class="side-title">MENU</div>
+    <button class="tab on" data-tab="scan" style="--t:#3730a3"><i></i>Scan &amp; Manifest</button>
+    <button class="tab" data-tab="dash" style="--t:#be185d"><i></i>Dashboard</button>
+    <button class="tab" data-tab="hist" style="--t:#0f766e"><i></i>History / Reprint</button>
+    <button class="tab" data-tab="set" style="--t:#b45309"><i></i>Settings &amp; Mail</button>
+  </aside>
+  <main style="min-width:0">
 
   <div class="flash" id="flash"></div>
 
   <!-- SETUP (sirf pehli baar) -->
   <section id="setup" class="card" hidden>
-    <h3 style="margin-top:0">Google Sheet ek baar connect karo</h3>
-    <p class="hint">Apni Google Sheet ka link yaha paste karo. Ye sirf ek baar karna hai - uske baad ye hamesha yaad rahega. Sheet me Scans, Manifests, Masters tab apne aap ban jayenge.</p>
-    <div class="row"><div class="field grow"><label for="setupUrl">Google Sheet link</label><input type="text" id="setupUrl" value="https://docs.google.com/spreadsheets/d/1-94aAtzWGgYbh5dfkbhKofuPwzW_6hShHWmSEbbC9rQ/edit?gid=0#gid=0" placeholder="https://docs.google.com/spreadsheets/d/..."></div>
+    <h3 style="margin-top:0">Connect your Google Sheet</h3>
+    <p class="hint">The Google Sheet link is built in. If the connection failed, check that this Google account has edit access to the sheet and press Connect. The Return_Scans, Return_Manifests, Return_Masters and Return_Seller_Emails tabs are created automatically.</p>
+    <div class="row"><div class="field grow"><label for="setupUrl">Google Sheet link</label><input type="text" id="setupUrl" placeholder="https://docs.google.com/spreadsheets/d/..."></div>
     <button class="btn primary" id="setupBtn">Connect Sheet</button></div>
     <div class="hint" id="setupErr" style="color:var(--bad);margin-top:8px"></div>
   </section>
@@ -181,54 +208,59 @@
   <!-- SCAN -->
   <section id="tab-scan">
     <div class="card">
+      <div class="step-title">Step 1 - Select Seller, Channel and Courier. The manifest is created automatically.</div>
       <div class="row">
-        <div class="field"><label for="selSeller">Seller</label><div class="add-row"><select id="selSeller"></select><button class="add-btn" data-add="SELLER" title="Naya seller">+</button></div></div>
-        <div class="field"><label for="selChannel">Channel</label><div class="add-row"><select id="selChannel"></select><button class="add-btn" data-add="CHANNEL" title="Naya channel">+</button></div></div>
-        <div class="field"><label for="selCourier">Courier</label><div class="add-row"><select id="selCourier"></select><button class="add-btn" data-add="COURIER" title="Naya courier">+</button></div></div>
-        <div class="field"><label for="selRemark">Remark (optional)</label>
-          <select id="selRemark"><option value="">- No remark -</option><option>Damaged</option><option>Wrong</option><option>Torn</option></select></div>
+        <div class="field"><label for="selSeller">Seller</label><div class="add-row"><select id="selSeller"></select><button class="add-btn" data-add="SELLER" title="Add new seller">+</button></div></div>
+        <div class="field"><label for="selChannel">Channel</label><div class="add-row"><select id="selChannel"></select><button class="add-btn" data-add="CHANNEL" title="Add new channel">+</button></div></div>
+        <div class="field"><label for="selCourier">Courier</label><div class="add-row"><select id="selCourier"></select><button class="add-btn" data-add="COURIER" title="Add new courier">+</button></div></div>
+        <div class="field"><label>&nbsp;</label><button class="btn primary" id="createBtn" style="padding:11px 20px">Create Manifest &amp; Start Scanning</button></div>
+      </div>
+      <div class="hint" id="selHint" style="margin-top:10px;font-weight:600"></div>
+    </div>
+
+    <div class="card mbanner" id="mBanner" hidden>
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div style="min-width:0">
+          <div class="mlabel">OPEN MANIFEST</div>
+          <div class="mid-big" id="mId">-</div>
+          <div class="chips" id="mChips" style="margin:0"></div>
+        </div>
+        <div class="mstats"><div><b id="mCount">0</b><span>AWB scanned</span></div><div><b id="mRem">0</b><span>With remark</span></div></div>
+        <div class="btn-row">
+          <button class="btn danger" id="cancelManifest">Cancel Manifest</button>
+          <button class="btn primary" id="submitBtn">Submit Manifest</button>
+        </div>
       </div>
     </div>
 
     <div class="card scan-bar" id="scanBar">
-      <div class="field"><label for="scanInput">AWB scan karo (A-Z, 0-9 only, max 25) - Enter</label>
-        <input type="text" id="scanInput" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="Scan barcode here...">
+      <div class="step-title">Step 2 - Scan AWB (it is added to the open manifest)</div>
+      <div class="row">
+        <div class="field"><label for="selRemark">Remark for next AWB (optional)</label>
+          <select id="selRemark"><option value="">- No remark -</option><option>Damaged</option><option>Wrong</option><option>Torn</option></select></div>
+        <div class="field grow"><label for="scanInput">AWB (A-Z, 0-9 only, max 25 characters) - press Enter</label>
+          <input type="text" id="scanInput" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="Scan barcode here..." disabled>
+        </div>
       </div>
       <div class="scan-line">
-        <button class="btn primary" id="camBtn">Camera se scan</button>
+        <button class="btn primary" id="camBtn">Scan with Camera</button>
         <button class="btn" id="addBtn">Add AWB</button>
-        <label class="switch"><input type="checkbox" id="hhdMode"> HHD mode (keyboard na khule)</label>
+        <label class="switch"><input type="checkbox" id="hhdMode"> HHD mode (no on-screen keyboard)</label>
         <label class="switch"><input type="checkbox" id="soundOn" checked> Sound</label>
       </div>
-      <div class="scan-status" id="scanStatus">Ready to scan</div>
+      <div class="scan-status" id="scanStatus">Select Seller, Channel and Courier to create a manifest.</div>
       <div id="camWrap" hidden>
-        <div class="cam-head"><span id="camMsg">Camera chalu...</span><button class="btn sm" id="camStop">Band karo</button></div>
+        <div class="cam-head"><span id="camMsg">Starting camera...</span><button class="btn sm" id="camStop">Stop</button></div>
         <div id="camReader"></div>
-      </div>
-    </div>
-
-    <div class="kpis">
-      <div class="kpi" style="--k:var(--c4)"><div class="n" id="pCount">0</div><div class="l">Pending AWB (submit baaki)</div></div>
-      <div class="kpi" style="--k:var(--c2)"><div class="n" id="pCombos">0</div><div class="l">Manifests banenge</div></div>
-      <div class="kpi" style="--k:var(--bad)"><div class="n" id="pRemarks">0</div><div class="l">Remark wale AWB</div></div>
-    </div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <div class="chips" id="comboChips" style="margin:0"></div>
-        <div class="btn-row">
-          <button class="btn danger" id="clearPending">Clear</button>
-          <button class="btn primary" id="submitBtn">Submit &amp; Manifest banao</button>
-        </div>
       </div>
     </div>
 
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>#</th><th>AWB</th><th>Seller</th><th>Channel</th><th>Courier</th><th>Remark</th><th>Time</th><th></th></tr></thead>
+        <thead><tr><th>#</th><th>AWB</th><th>Remark (change per AWB)</th><th>Time</th><th></th></tr></thead>
         <tbody id="pendBody"></tbody>
       </table>
-      <div class="empty" id="pendEmpty">Abhi koi AWB scan nahi hua.</div>
+      <div class="empty" id="pendEmpty">No AWB scanned yet.</div>
     </div>
     <div class="hint" style="margin-top:8px" id="pendNote"></div>
   </section>
@@ -242,6 +274,7 @@
           <button class="btn sm" data-p="yest">Yesterday</button>
           <button class="btn sm" data-p="7">Last 7 days</button>
           <button class="btn sm" data-p="month">This month</button>
+          <button class="btn sm" data-p="all">All time</button>
         </div>
         <div class="field"><label for="dFrom">From</label><input type="date" id="dFrom"></div>
         <div class="field"><label for="dTo">To</label><input type="date" id="dTo"></div>
@@ -249,7 +282,7 @@
         <span class="hint" id="dashStamp"></span>
       </div>
     </div>
-    <div id="dashBody"><div class="empty">Dashboard load ho raha hai...</div></div>
+    <div id="dashBody"><div class="empty">Loading dashboard...</div></div>
   </section>
 
   <!-- HISTORY -->
@@ -265,21 +298,21 @@
         <div class="field"><label for="hChannel">Channel</label><select id="hChannel"></select></div>
         <div class="field"><label for="hCourier">Courier</label><select id="hCourier"></select></div>
         <button class="btn primary" id="hGo">Search</button>
-        <button class="btn" id="hToday">Aaj</button>
+        <button class="btn" id="hToday">Today</button>
         <button class="btn" id="hReset">Reset</button>
       </div>
     </div>
     <div id="hSummary" class="hint" style="margin-bottom:10px"></div>
     <div class="btn-row" id="hAll" style="margin-bottom:12px" hidden>
-      <button class="btn" data-all="pdf">Sab ka PDF</button>
-      <button class="btn" data-all="csv">Sab ka CSV</button>
-      <button class="btn" data-all="xlsx">Sab ka Excel</button>
+      <button class="btn" data-all="pdf">All as PDF</button>
+      <button class="btn" data-all="csv">All as CSV</button>
+      <button class="btn" data-all="xlsx">All as Excel</button>
     </div>
     <div class="tbl-wrap" id="hWrap" hidden>
       <table><thead><tr><th>Manifest ID</th><th>Date</th><th>Seller</th><th>Channel</th><th>Courier</th><th class="r">AWB</th><th>By</th><th>Download</th></tr></thead>
       <tbody id="hBody"></tbody></table>
     </div>
-    <div class="empty" id="hEmpty">AWB, date ya filter lagakar Search dabao.</div>
+    <div class="empty" id="hEmpty">Search by AWB, date or filters.</div>
   </section>
 
   <!-- SETTINGS -->
@@ -287,37 +320,41 @@
     <div class="card">
       <h3 style="margin-top:0">Google Sheet</h3>
       <div class="hint" id="sheetInfo"></div>
-      <div class="row" style="margin-top:10px"><div class="field grow"><label for="newSheetUrl">Sheet badalni ho to naya link (warna chhod do)</label><input type="text" id="newSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..."></div>
-      <button class="btn" id="changeSheet">Sheet badlo</button></div>
     </div>
     <div class="card">
       <h3 style="margin-top:0">Auto Mail</h3>
       <div class="mail-grid">
-        <label class="switch"><input type="checkbox" id="mEnabled"> Roz auto mail chalu</label>
-        <div class="field"><label for="mHour">Mail ka time (roz)</label>
+        <label class="switch"><input type="checkbox" id="mEnabled"> Enable daily auto mail</label>
+        <div class="field"><label for="mHour">Daily mail time</label>
           <select id="mHour"></select></div>
-        <div class="field"><label for="mWhich">Kis din ka data</label>
-          <select id="mWhich"><option value="today">Usi din ka (aaj)</option><option value="yesterday">Kal ka</option></select></div>
-        <label class="switch"><input type="checkbox" id="mSeller" checked> Har seller ko uski alag summary</label>
+        <div class="field"><label for="mWhich">Data of which day</label>
+          <select id="mWhich"><option value="today">Same day (today)</option><option value="yesterday">Previous day</option></select></div>
+        <label class="switch"><input type="checkbox" id="mSeller" checked> Send each seller their own summary</label>
       </div>
-      <div class="field" style="margin-top:12px"><label for="mInternal">Internal summary (sab sellers ki) - emails, comma se alag</label>
+      <div class="field" style="margin-top:12px"><label for="mInternal">Internal summary (all sellers) - emails separated by comma</label>
         <input type="text" id="mInternal" placeholder="ops@company.com, manager@company.com"></div>
-      <h3>Seller ke email (customer ko summary jayegi)</h3>
-      <div class="tbl-wrap scroll" style="max-height:300px"><table><thead><tr><th>Seller</th><th>Email (comma se multiple)</th></tr></thead><tbody id="sellerMailBody"></tbody></table></div>
+      <div class="card" style="background:#fff7ed;border-color:#fdba74;margin:14px 0 0">
+        <h3 style="margin:0 0 8px;background:linear-gradient(120deg,#9a3412,#c2410c)">Seller email mapping (from your Google Sheet)</h3>
+        <div class="hint">Open the <b>Return_Seller_Emails</b> tab in your Google Sheet. Column A = Seller Name, Column B = Email IDs (separate multiple emails with a comma). Each seller automatically receives only their own summary at the scheduled time. New sellers can also be typed directly in that tab.</div>
+        <div class="btn-row" style="margin-top:10px"><a class="btn" id="emailTabLink" href="#" target="_blank" rel="noopener" style="text-decoration:none">Open Seller Emails tab</a></div>
+      </div>
       <div class="btn-row" style="margin-top:12px"><button class="btn primary" id="mSave">Save mail settings</button></div>
-      <div class="hint" style="margin-top:8px">Apps Script time trigger us ghante ke andar kabhi bhi (aam taur par 15 min ke window me) chalta hai.</div>
+      <div class="hint" style="margin-top:8px">Note: Google runs the trigger at some point within the selected hour (usually within a 15 minute window).</div>
     </div>
     <div class="card">
-      <h3 style="margin-top:0">Abhi manually bhejo</h3>
+      <h3 style="margin-top:0">Send manually now</h3>
       <div class="row">
-        <div class="field"><label for="mDate">Kis date ka data</label><input type="date" id="mDate"></div>
-        <button class="btn" data-send="internal">Internal summary bhejo</button>
-        <button class="btn" data-send="sellers">Seller ko bhejo</button>
-        <button class="btn primary" data-send="both">Dono bhejo</button>
+        <div class="field"><label for="mDate">Date to send</label><input type="date" id="mDate"></div>
+        <button class="btn" data-send="internal">Send internal summary</button>
+        <button class="btn" data-send="sellers">Send to sellers</button>
+        <button class="btn primary" data-send="both">Send both</button>
       </div>
       <div class="hint" id="mSendMsg" style="margin-top:10px"></div>
     </div>
   </section>
+
+  </main>
+  </div>
 
 </div>
 
@@ -388,7 +425,7 @@ function uiPrompt(title, ph){
 }
 function uiConfirm(title, text, yes){
   return new Promise(res=>{
-    modal(`<h2>${esc(title)}</h2><p>${esc(text||'')}</p><div class="btn-row" style="justify-content:flex-end"><button class="btn" id="ucNo">Cancel</button><button class="btn primary" id="ucYes">${esc(yes||'Haan')}</button></div>`);
+    modal(`<h2>${esc(title)}</h2><p>${esc(text||'')}</p><div class="btn-row" style="justify-content:flex-end"><button class="btn" id="ucNo">Cancel</button><button class="btn primary" id="ucYes">${esc(yes||'Yes')}</button></div>`);
     $('ucYes').onclick = ()=>{ closeModal(); res(true); };
     $('ucNo').onclick = ()=>{ closeModal(); res(false); };
     $('ucYes').focus();
@@ -406,53 +443,124 @@ function openTab(t){
 $('tabs').addEventListener('click', e=>{ const b = e.target.closest('.tab'); if(b && !$('setup').dataset.lock) openTab(b.dataset.tab); });
 
 /* ---------- Masters / selects ---------- */
-function fillSelect(el, list, placeholder, keep){
-  const cur = keep ? el.value : '';
+function fillSelect(el, list, placeholder){
   el.innerHTML = '';
   if(placeholder !== null){ const o = document.createElement('option'); o.value=''; o.textContent=placeholder; el.appendChild(o); }
   list.forEach(n=>{ const o = document.createElement('option'); o.value = n; o.textContent = n; el.appendChild(o); });
-  if(cur && list.indexOf(cur)>-1) el.value = cur;
 }
 function fillAllMasters(){
-  const sel = JSON.parse(lsGet(LS.sel,'{}')||'{}');
-  fillSelect($('selSeller'), M.sellers.map(x=>x.name), '- Seller chuno -');
-  fillSelect($('selChannel'), M.channels.map(x=>x.name), '- Channel chuno -');
-  fillSelect($('selCourier'), M.couriers.map(x=>x.name), '- Courier chuno -');
-  if(sel.seller) $('selSeller').value = sel.seller;
-  if(sel.channel) $('selChannel').value = sel.channel;
-  if(sel.courier) $('selCourier').value = sel.courier;
+  fillSelect($('selSeller'), M.sellers.map(x=>x.name), '- Select Seller -');
+  fillSelect($('selChannel'), M.channels.map(x=>x.name), '- Select Channel -');
+  fillSelect($('selCourier'), M.couriers.map(x=>x.name), '- Select Courier -');
   fillSelect($('hSeller'), M.sellers.map(x=>x.name), 'All Sellers');
   fillSelect($('hChannel'), M.channels.map(x=>x.name), 'All Channels');
   fillSelect($('hCourier'), M.couriers.map(x=>x.name), 'All Couriers');
 }
-function saveSel(){
-  lsSet(LS.sel, JSON.stringify({seller:$('selSeller').value, channel:$('selChannel').value, courier:$('selCourier').value}));
+function setSelect(id, val){
+  const el = $(id);
+  if(val && !Array.from(el.options).some(o=>o.value===val)){ const o = document.createElement('option'); o.value = val; o.textContent = val; el.appendChild(o); }
+  el.value = val || '';
 }
-['selSeller','selChannel','selCourier'].forEach(id=> $(id).addEventListener('change', ()=>{ saveSel(); focusScan(); }));
+const SELS = ['selSeller','selChannel','selCourier'];
+let cur = null;           // open manifest: {seller, channel, courier, id}
+let creating = false;
+
+function lockSelects(on){
+  SELS.forEach(id=> $(id).disabled = on);
+  document.querySelectorAll('.add-btn').forEach(b=> b.disabled = on);
+}
+function missingSel(){
+  const names = {selSeller:'Seller', selChannel:'Channel', selCourier:'Courier'};
+  return SELS.filter(id=> !$(id).value).map(id=> names[id]);
+}
+function updateSelHint(){
+  const h = $('selHint');
+  if(cur){ h.textContent = 'Manifest is open. To change Seller / Channel / Courier, cancel or submit this manifest first.'; h.style.color = '#166534'; return; }
+  const miss = missingSel();
+  h.style.color = miss.length ? '#be185d' : '#166534';
+  h.textContent = miss.length ? 'Still to select: ' + miss.join(', ') + ' - then the manifest is created and the scan box becomes active.' : 'All selected - creating manifest...';
+}
+function updateManifestUi(){
+  const open = !!cur;
+  $('createBtn').disabled = open;
+  scanInput.placeholder = open ? 'Scan barcode here...' : 'Create a manifest first';
+  updateSelHint();
+  lockSelects(open);
+  $('mBanner').hidden = !open;
+  scanInput.disabled = !open; $('camBtn').disabled = !open; $('addBtn').disabled = !open; $('selRemark').disabled = !open;
+  if(open){
+    $('mId').textContent = cur.id;
+    $('mChips').innerHTML = `<span class="chip">Seller: <b>${esc(cur.seller)}</b></span><span class="chip">Channel: <b>${esc(cur.channel)}</b></span><span class="chip">Courier: <b>${esc(cur.courier)}</b></span>`;
+  }else{
+    setStatus('Select Seller, Channel and Courier to create a manifest.', '');
+  }
+  renderPending();
+}
+async function tryCreateManifest(){
+  if(cur || creating) return;
+  const seller = $('selSeller').value, channel = $('selChannel').value, courier = $('selCourier').value;
+  if(!seller || !channel || !courier) return;
+  creating = true; lockSelects(true); setStatus('Creating manifest...', '');
+  try{
+    const r = await gs('previewManifestId', {seller, channel, courier});
+    cur = {seller, channel, courier, id:r.id};
+    pending = []; pendingSet.clear();
+    saveDraft();
+    showFlash('Manifest created: ' + cur.id, 'ok');
+    setStatus('Manifest ' + cur.id + ' is open - scan AWB now.', 'ok');
+  }catch(e){
+    lockSelects(false);
+    showFlash('Could not create manifest: ' + e.message, 'dup');
+  }
+  creating = false; updateManifestUi();
+  if(cur) setStatus('Manifest ' + cur.id + ' is open - scan AWB now.', 'ok');
+  focusScan();
+}
+SELS.forEach(id=> $(id).addEventListener('change', ()=>{ $(id).classList.remove('miss'); updateSelHint(); tryCreateManifest(); }));
+$('createBtn').addEventListener('click', ()=>{
+  if(cur) return;
+  const miss = missingSel();
+  SELS.forEach(id=> $(id).classList.toggle('miss', !$(id).value));
+  if(miss.length){ showFlash('Please select: ' + miss.join(', '), 'dup'); updateSelHint(); return; }
+  tryCreateManifest();
+});
+
+function resetManifest(){
+  stopCamera();
+  cur = null; pending = []; pendingSet.clear();
+  SELS.forEach(id=> $(id).value = '');
+  $('selRemark').value = '';
+  saveDraft(true);
+  updateManifestUi();
+}
+$('cancelManifest').addEventListener('click', async ()=>{
+  if(!cur) return;
+  const msg = pending.length ? pending.length + ' scanned AWB will be discarded (nothing has been saved to the sheet yet).' : 'The open manifest will be closed.';
+  if(await uiConfirm('Cancel this manifest?', msg, 'Cancel Manifest')) resetManifest();
+});
+
 document.querySelectorAll('.add-btn').forEach(b=> b.addEventListener('click', async ()=>{
   const type = b.dataset.add;
   const label = {SELLER:'Seller', CHANNEL:'Channel', COURIER:'Courier'}[type];
-  const name = await uiPrompt('Naya ' + label + ' ka naam', label + ' name');
+  const name = await uiPrompt('New ' + label + ' name', label + ' name');
   if(!name) return;
   try{
+    const keep = {selSeller:$('selSeller').value, selChannel:$('selChannel').value, selCourier:$('selCourier').value};
     M = await gs('addMaster', type, name);
-    const keep = {seller:$('selSeller').value, channel:$('selChannel').value, courier:$('selCourier').value};
     fillAllMasters();
-    $('selSeller').value = keep.seller; $('selChannel').value = keep.channel; $('selCourier').value = keep.courier;
+    SELS.forEach(id=> setSelect(id, keep[id]));
     const target = {SELLER:'selSeller', CHANNEL:'selChannel', COURIER:'selCourier'}[type];
-    const opts = Array.from($(target).options);
-    const hit = opts.find(o=> o.value.toLowerCase()===name.toLowerCase());
+    const hit = Array.from($(target).options).find(o=> o.value.toLowerCase()===name.toLowerCase());
     if(hit) $(target).value = hit.value;
-    saveSel();
-    showFlash('"'+name+'" add ho gaya.', 'ok');
-  }catch(e){ showFlash('Add nahi hua: '+e.message, 'dup'); }
-  focusScan();
+    showFlash('"' + name + '" added.', 'ok');
+    tryCreateManifest();
+  }catch(e){ showFlash('Could not add: ' + e.message, 'dup'); }
 }));
 
 /* ---------- Scan core ---------- */
 const scanInput = $('scanInput');
 function focusScan(){
-  if(!$('tab-scan').hidden && ($('hhdMode').checked || window.matchMedia('(pointer:fine)').matches)) scanInput.focus();
+  if(cur && !$('tab-scan').hidden && ($('hhdMode').checked || window.matchMedia('(pointer:fine)').matches)) scanInput.focus();
 }
 function setStatus(msg, cls){
   const s = $('scanStatus'); s.textContent = msg; s.className = 'scan-status ' + (cls||'');
@@ -460,26 +568,44 @@ function setStatus(msg, cls){
 }
 function validateAwb(raw){
   const id = String(raw||'').trim().toUpperCase();
-  if(!id) return {err:'Khali scan'};
-  if(id.length > MAX_LEN) return {err:'Reject: ' + id.length + ' character - max ' + MAX_LEN + ' allowed'};
-  if(!/^[A-Z0-9]+$/.test(id)) return {err:'Reject: special character allowed nahi (sirf A-Z, 0-9)'};
+  if(!id) return {err:'Empty scan'};
+  if(id.length > MAX_LEN) return {err:'Rejected: ' + id.length + ' characters - maximum ' + MAX_LEN + ' allowed'};
+  if(!/^[A-Z0-9]+$/.test(id)) return {err:'Rejected: special characters are not allowed (only A-Z, 0-9)'};
   return {id};
 }
+let alertOpen = false, alertTimer = null;
+function dupAlert(id, why){
+  alertOpen = true;
+  try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); }catch(e){}
+  scanInput.value = '';
+  const root = document.createElement('div');
+  root.className = 'overlay alert-overlay'; root.setAttribute('role','alertdialog'); root.setAttribute('aria-modal','true');
+  root.innerHTML = '<div class="modal alert-box"><div class="alert-icon">!</div><h2>DUPLICATE AWB</h2><div class="alert-awb">' + esc(id) + '</div><p>' + esc(why) + '</p><p class="alert-note">Scanning is paused. Check the parcel, then tap OK to continue.</p><button class="btn primary alert-ok" id="dupOk" type="button">OK - I have checked</button></div>';
+  document.body.appendChild(root);
+  errBeep();
+  alertTimer = setInterval(errBeep, 1800);
+  $('dupOk').addEventListener('click', e=>{
+    if(e.detail === 0) return;   // keyboard / scanner Enter must not dismiss it - only a real tap or click
+    clearInterval(alertTimer); root.remove(); alertOpen = false;
+    lastCam.at = Date.now();
+    focusScan();
+  });
+}
+['keydown','keypress','keyup'].forEach(ev=> document.addEventListener(ev, e=>{ if(alertOpen){ e.preventDefault(); e.stopPropagation(); } }, true));
+
 function handleScan(raw){
+  if(alertOpen) return false;
   const v = validateAwb(raw);
-  if(v.err){ if(v.err!=='Khali scan'){ setStatus(v.err + ' -> "' + String(raw).slice(0,30) + '"', 'err'); errBeep(); } return false; }
+  if(v.err){ if(v.err!=='Empty scan'){ setStatus(v.err + ' -> "' + String(raw).slice(0,30) + '"', 'err'); errBeep(); } return false; }
   const id = v.id;
-  const user = $('userName').value.trim();
-  if(!user){ setStatus('Pehle upar apna naam likho', 'err'); errBeep(); $('userName').focus(); return false; }
-  const seller = $('selSeller').value, channel = $('selChannel').value, courier = $('selCourier').value;
-  if(!seller || !channel || !courier){ setStatus('Pehle Seller, Channel aur Courier chuno', 'err'); errBeep(); return false; }
-  if(pendingSet.has(id)){ setStatus('Duplicate (abhi scan ho chuka): ' + id, 'err'); errBeep(); return false; }
-  if(known.has(id)){ setStatus('Duplicate (pehle submit ho chuka): ' + id, 'err'); errBeep(); return false; }
+  if(!cur){ setStatus('Select Seller, Channel and Courier first to create a manifest', 'err'); errBeep(); return false; }
+  if(pendingSet.has(id)){ setStatus('Duplicate (already in this manifest): ' + id, 'err'); dupAlert(id, 'This AWB is already scanned in the current manifest.'); return false; }
+  if(known.has(id)){ setStatus('Duplicate (already submitted earlier): ' + id, 'err'); dupAlert(id, 'This AWB was already submitted in an earlier manifest.'); return false; }
   const remark = $('selRemark').value;
-  pending.push({awb:id, seller, channel, courier, remark, ts:Date.now()});
+  pending.push({awb:id, remark, ts:Date.now()});
   pendingSet.add(id);
   $('selRemark').value = '';
-  setStatus('OK  ' + id + (remark? '  [' + remark + ']' : '') + '   ' + seller + ' / ' + channel + ' / ' + courier, 'ok');
+  setStatus('Added  ' + id + (remark ? '  [' + remark + ']' : '') + '  ->  ' + cur.id, 'ok');
   okBeep();
   renderPending();
   saveDraftSoon();
@@ -496,22 +622,19 @@ scanInput.addEventListener('keydown', e=>{
 $('addBtn').addEventListener('click', ()=>{ const v = scanInput.value; scanInput.value=''; handleScan(v); focusScan(); });
 
 function fmtTime(ts){ const d = new Date(ts); return d.toLocaleTimeString('en-IN',{hour12:false}); }
+const SHOW_ROWS = 200;
 function renderPending(){
   const n = pending.length;
-  $('pCount').textContent = n;
-  const combos = {};
-  let rem = 0;
-  pending.forEach(p=>{ const k = p.seller+' / '+p.channel+' / '+p.courier; combos[k] = (combos[k]||0)+1; if(p.remark) rem++; });
-  $('pCombos').textContent = Object.keys(combos).length;
-  $('pRemarks').textContent = rem;
-  $('comboChips').innerHTML = Object.keys(combos).map(k=>`<span class="chip">${esc(k)}: <b>${combos[k]}</b></span>`).join('') || '<span class="hint">Pending list khali hai</span>';
+  $('mCount').textContent = n;
+  $('mRem').textContent = pending.filter(p=>p.remark).length;
   $('pendEmpty').hidden = n>0;
-  const show = pending.slice(-100).reverse();
+  const show = pending.slice(-SHOW_ROWS).reverse();
   $('pendBody').innerHTML = show.map((p,i)=>{
     const idx = n - i;
-    return `<tr><td>${idx}</td><td>${esc(p.awb)}</td><td>${esc(p.seller)}</td><td>${esc(p.channel)}</td><td>${esc(p.courier)}</td><td>${p.remark?'<span class="tag">'+esc(p.remark)+'</span>':'-'}</td><td>${fmtTime(p.ts)}</td><td><button class="x-btn" data-del="${esc(p.awb)}" title="Hatao">&#10005;</button></td></tr>`;
+    const opts = ['','Damaged','Wrong','Torn'].map(r=>`<option value="${r}"${p.remark===r?' selected':''}>${r||'-'}</option>`).join('');
+    return `<tr><td>${idx}</td><td>${esc(p.awb)}</td><td><select class="rsel" data-rm="${esc(p.awb)}">${opts}</select></td><td>${fmtTime(p.ts)}</td><td><button class="x-btn" data-del="${esc(p.awb)}" title="Remove">&#10005;</button></td></tr>`;
   }).join('');
-  $('pendNote').textContent = n>100 ? 'Sirf last 100 AWB dikh rahe hain; submit par sab (' + n + ') jayenge.' : '';
+  $('pendNote').textContent = n>SHOW_ROWS ? 'Showing the last ' + SHOW_ROWS + ' AWB; all ' + n + ' will be submitted.' : '';
 }
 $('pendBody').addEventListener('click', e=>{
   const b = e.target.closest('[data-del]'); if(!b) return;
@@ -519,32 +642,39 @@ $('pendBody').addEventListener('click', e=>{
   pending = pending.filter(p=> p.awb!==id); pendingSet.delete(id);
   renderPending(); saveDraftSoon(); focusScan();
 });
+$('pendBody').addEventListener('change', e=>{
+  const s = e.target.closest('[data-rm]'); if(!s) return;
+  const p = pending.find(x=> x.awb===s.dataset.rm);
+  if(p){ p.remark = s.value; $('mRem').textContent = pending.filter(x=>x.remark).length; saveDraftSoon(); }
+  focusScan();
+});
 let _dt = null;
-function saveDraftSoon(){ clearTimeout(_dt); _dt = setTimeout(()=> lsSet(LS.draft, JSON.stringify(pending)), 300); }
+function saveDraft(now){ clearTimeout(_dt); lsSet(LS.draft, JSON.stringify(cur ? {cur, pending} : {})); }
+function saveDraftSoon(){ clearTimeout(_dt); _dt = setTimeout(saveDraft, 300); }
 function loadDraft(){
   try{
-    const d = JSON.parse(lsGet(LS.draft,'[]')||'[]');
-    if(Array.isArray(d)) d.forEach(p=>{ if(p && p.awb && !pendingSet.has(p.awb)){ pending.push(p); pendingSet.add(p.awb); } });
+    const d = JSON.parse(lsGet(LS.draft,'{}')||'{}');
+    if(d && d.cur && d.cur.id && Array.isArray(d.pending)){
+      cur = d.cur;
+      d.pending.forEach(p=>{ if(p && p.awb && !pendingSet.has(p.awb) && !known.has(p.awb)){ pending.push(p); pendingSet.add(p.awb); } });
+      setSelect('selSeller', cur.seller); setSelect('selChannel', cur.channel); setSelect('selCourier', cur.courier);
+    }
   }catch(e){}
 }
-$('clearPending').addEventListener('click', async ()=>{
-  if(!pending.length) return;
-  if(await uiConfirm('Pending clear karein?', pending.length + ' AWB list se hat jayenge (sheet me kuch save nahi hua hai).', 'Clear karo')){
-    pending = []; pendingSet.clear(); renderPending(); saveDraftSoon(); focusScan();
-  }
-});
 
 /* ---------- Camera ---------- */
 let qr = null, camOn = false, lastCam = {t:'', at:0};
 async function startCamera(){
   if(camOn) return;
-  if(typeof Html5Qrcode === 'undefined'){ showFlash('Camera library load nahi hui (internet check karo).', 'dup'); return; }
-  $('camWrap').hidden = false; $('camMsg').textContent = 'Camera chalu ho raha hai...';
+  if(!cur){ showFlash('Select Seller, Channel and Courier first.', 'dup'); return; }
+  if(typeof Html5Qrcode === 'undefined'){ showFlash('Camera library could not load (check internet connection).', 'dup'); return; }
+  $('camWrap').hidden = false; $('camMsg').textContent = 'Starting camera...';
   try{
     const F = Html5QrcodeSupportedFormats;
     qr = new Html5Qrcode('camReader', {
       formatsToSupport:[F.CODE_128, F.CODE_39, F.CODE_93, F.EAN_13, F.EAN_8, F.ITF, F.UPC_A, F.CODABAR, F.QR_CODE, F.DATA_MATRIX],
-      experimentalFeatures:{ useBarCodeDetectorIfSupported:true },
+      experimentalFeatures:{ useBarCodeDetector:true },
+      useBarCodeDetectorIfSupported:true,
       verbose:false
     });
     await qr.start({facingMode:'environment'},
@@ -555,10 +685,10 @@ async function startCamera(){
         lastCam = {t:txt, at:now};
         handleScan(txt);
       }, ()=>{});
-    camOn = true; $('camMsg').textContent = 'Barcode ko box ke andar rakho - scan hote hi agla dikhao';
+    camOn = true; $('camMsg').textContent = 'Keep the barcode inside the box - show the next one right after the beep';
   }catch(e){
     $('camWrap').hidden = true; qr = null;
-    showFlash('Camera nahi khula: ' + (e && e.message ? e.message : e) + ' - Browser me camera permission allow karo.', 'dup');
+    showFlash('Camera could not start: ' + (e && e.message ? e.message : e) + ' - please allow camera permission in the browser.', 'dup');
   }
 }
 async function stopCamera(){
@@ -577,7 +707,6 @@ function applyHhd(){
 }
 $('hhdMode').addEventListener('change', applyHhd);
 $('soundOn').addEventListener('change', ()=> lsSet(LS.snd, $('soundOn').checked?'1':'0'));
-$('userName').addEventListener('input', ()=> lsSet(LS.user, $('userName').value.trim()));
 document.addEventListener('click', e=>{
   if(!$('tab-scan').hidden && !e.target.closest('select,input,button,textarea,.modal,#camWrap,label')) focusScan();
 });
@@ -624,100 +753,118 @@ function downloadPdf(manifests){
   const jsPDF = window.jspdf.jsPDF;
   const doc = new jsPDF({unit:'mm', format:'a4'});
   const logo = $('logoImg').src;
-  manifests.forEach((m, i)=>{
-    if(i>0) doc.addPage();
-    doc.setFillColor(15,26,20); doc.rect(0,0,210,32,'F');
-    doc.setTextColor(255,176,32); doc.setFont('helvetica','bold'); doc.setFontSize(19); doc.text('RETURN MANIFEST', 14, 14);
-    doc.setTextColor(255,255,255); doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.text('Emiza  |  ' + WH + ' - Return Inward', 14, 22);
-    try{ doc.addImage(logo, 'PNG', 176, 5, 20, 20); }catch(e){}
-
-    // barcode
-    let by = 40;
+  const PER_COL = 50, PER_PAGE = 100, ROW_H = 4.5, HEAD_Y = 52, ROWS_Y = 57;
+  const COLS = [10, 107], COL_W = 93;
+  const pageIds = [];
+  let firstPage = true;
+  manifests.forEach(m=>{
+    let bc = null;
     try{
       const cv = document.createElement('canvas');
-      JsBarcode(cv, m.id, {format:'CODE128', displayValue:false, height:70, margin:0, width:3});
-      const bw = 130, bh = Math.min(26, bw * cv.height / cv.width);
-      doc.addImage(cv.toDataURL('image/png'), 'PNG', (210-bw)/2, by, bw, bh);
-      by += bh + 5;
-    }catch(e){ by += 4; }
-    doc.setTextColor(20,30,25); doc.setFont('courier','bold'); doc.setFontSize(13);
-    doc.text(m.id, 105, by, {align:'center'});
-    by += 8;
-
-    // details box
-    doc.setDrawColor(210,220,214); doc.setFillColor(246,249,247);
-    doc.roundedRect(14, by, 182, 36, 2, 2, 'FD');
-    const L = [['Manifest Date', prettyDate(m.date)], ['Scanning Completed', prettyDT(m.completedAt)], ['Scanned By', m.user]];
-    const R = [['Seller', m.seller], ['Channel', m.channel], ['Courier', m.courier]];
-    doc.setFontSize(8.5);
-    L.forEach((r,k)=>{ doc.setFont('helvetica','normal'); doc.setTextColor(110,125,117); doc.text(r[0], 19, by+8+k*9); doc.setFont('helvetica','bold'); doc.setTextColor(20,30,25); doc.text(String(r[1]), 19, by+12.5+k*9, {maxWidth:80}); });
-    R.forEach((r,k)=>{ doc.setFont('helvetica','normal'); doc.setTextColor(110,125,117); doc.text(r[0], 110, by+8+k*9); doc.setFont('helvetica','bold'); doc.setTextColor(20,30,25); doc.text(String(r[1]), 110, by+12.5+k*9, {maxWidth:82}); });
-    by += 42;
+      JsBarcode(cv, m.id, {format:'CODE128', displayValue:false, height:60, margin:0, width:2});
+      bc = cv.toDataURL('image/png');
+    }catch(e){}
     const remCount = m.rows.filter(r=>r.remark).length;
-    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(20,30,25);
-    doc.text('Total AWB: ' + m.rows.length + (remCount ? '    (Remarks: ' + remCount + ')' : ''), 14, by);
-    by += 3;
+    const pages = Math.max(1, Math.ceil(m.rows.length / PER_PAGE));
+    for(let pg=0; pg<pages; pg++){
+      if(!firstPage) doc.addPage(); firstPage = false;
+      pageIds.push(m.id);
 
-    doc.autoTable({
-      startY: by,
-      head: [['#','AWB','Remark','Scan Time']],
-      body: m.rows.map((r,k)=>[k+1, r.awb, r.remark||'-', r.time]),
-      styles:{font:'courier', fontSize:9, cellPadding:1.8},
-      headStyles:{fillColor:[15,26,20], textColor:[255,176,32], font:'helvetica', fontStyle:'bold'},
-      alternateRowStyles:{fillColor:[246,249,247]},
-      columnStyles:{0:{cellWidth:14}, 2:{cellWidth:32}, 3:{cellWidth:30}},
-      margin:{left:14, right:14, bottom:22},
-      didDrawPage:()=>{ doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,130,125); doc.text(m.id, 14, 290); }
-    });
-    // signature area
-    let sy = doc.lastAutoTable.finalY + 18;
-    if(sy > 270){ doc.addPage(); sy = 40; }
-    doc.setDrawColor(150,160,155); doc.line(14, sy, 74, sy); doc.line(136, sy, 196, sy);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(110,125,117);
-    doc.text('Received By (Signature)', 14, sy+5); doc.text('Handed Over By (Signature)', 136, sy+5);
+      // compact header band
+      doc.setFillColor(49,46,129); doc.rect(0,0,210,15,'F');
+      doc.setFillColor(190,24,93); doc.rect(0,15,210,1.2,'F');
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.text('RETURN MANIFEST', 10, 9.8);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.text('Emiza  |  ' + WH, 185, 9.5, {align:'right'});
+      try{ doc.addImage(logo, 'PNG', 188, 2.5, 10, 10); }catch(e){}
+
+      // barcode + id (left), dates (right)
+      if(bc){ try{ doc.addImage(bc, 'PNG', 10, 20, 90, 12); }catch(e){} }
+      doc.setTextColor(20,30,60); doc.setFont('courier','bold'); doc.setFontSize(10); doc.text(m.id, 10, 36.5);
+      const D = [['Manifest Date', prettyDate(m.date)], ['Scanning Completed', prettyDT(m.completedAt)], ['Scanned By', m.user]];
+      D.forEach((r,k)=>{
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(100,110,140); doc.text(r[0], 108, 22.5 + k*6);
+        doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(20,30,60); doc.text(String(r[1]), 143, 22.5 + k*6, {maxWidth:57});
+      });
+
+      // seller / channel / courier / total
+      doc.setFillColor(245,243,255); doc.setDrawColor(196,181,253); doc.roundedRect(10, 40, 190, 9, 1.5, 1.5, 'FD');
+      const C = [['SELLER', m.seller, 13, 58], ['CHANNEL', m.channel, 74, 36], ['COURIER', m.courier, 114, 36], ['TOTAL AWB', m.rows.length + (remCount ? '  (Remarks: ' + remCount + ')' : ''), 156, 42]];
+      C.forEach(c=>{
+        doc.setFont('helvetica','normal'); doc.setFontSize(6); doc.setTextColor(100,110,140); doc.text(c[0], c[2], 43.6);
+        doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(20,30,60); doc.text(String(c[1]), c[2], 47.6, {maxWidth:c[3]});
+      });
+
+      // AWB grid: 2 blocks x 50 rows = 100 AWB per page
+      const slice = m.rows.slice(pg*PER_PAGE, (pg+1)*PER_PAGE);
+      COLS.forEach(x0=>{
+        doc.setFillColor(49,46,129); doc.rect(x0, HEAD_Y, COL_W, 5, 'F');
+        doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+        doc.text('#', x0+2, HEAD_Y+3.5); doc.text('AWB', x0+12, HEAD_Y+3.5); doc.text('Remark', x0+66, HEAD_Y+3.5);
+      });
+      slice.forEach((r,i)=>{
+        const c = Math.floor(i / PER_COL), row = i % PER_COL;
+        const x0 = COLS[c], y = ROWS_Y + row*ROW_H;
+        if(row % 2 === 0){ doc.setFillColor(243,240,255); doc.rect(x0, y, COL_W, ROW_H, 'F'); }
+        doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(110,120,150); doc.text(String(pg*PER_PAGE + i + 1), x0+2, y+3.2);
+        doc.setFont('courier','bold'); doc.setFontSize(8); doc.setTextColor(20,30,60); doc.text(String(r.awb), x0+12, y+3.3);
+        if(r.remark){ doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(194,65,12); doc.text(String(r.remark), x0+66, y+3.2); }
+      });
+      doc.setDrawColor(196,181,253);
+      COLS.forEach(x0=>{ const rowsInCol = Math.min(PER_COL, Math.max(0, slice.length - (x0===COLS[0] ? 0 : PER_COL))); if(rowsInCol>0) doc.line(x0, ROWS_Y + rowsInCol*ROW_H, x0+COL_W, ROWS_Y + rowsInCol*ROW_H); });
+    }
   });
   const n = doc.internal.getNumberOfPages();
-  for(let p=1; p<=n; p++){ doc.setPage(p); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120,130,125); doc.text('Page ' + p + ' / ' + n, 196, 290, {align:'right'}); }
+  for(let p=1; p<=n; p++){
+    doc.setPage(p);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(100,110,140);
+    doc.text('Received By: ____________________     Handed Over By: ____________________', 10, 292);
+    doc.text(pageIds[p-1] + '   |   Page ' + p + ' / ' + n, 200, 292, {align:'right'});
+  }
   doc.save(baseName(manifests)+'.pdf');
 }
 function runDownload(kind, manifests){
   try{
-    if(!manifests.length){ showFlash('Download ke liye data nahi hai.', 'dup'); return; }
+    if(!manifests.length){ showFlash('No data available to download.', 'dup'); return; }
     if(kind==='pdf') downloadPdf(manifests); else if(kind==='csv') downloadCsv(manifests); else downloadXlsx(manifests);
-  }catch(e){ showFlash('Download fail: ' + e.message, 'dup'); }
+  }catch(e){ showFlash('Download failed: ' + e.message, 'dup'); }
 }
 
 /* ---------- Submit ---------- */
 $('submitBtn').addEventListener('click', async ()=>{
-  if(!pending.length){ showFlash('Pehle AWB scan karo.', 'dup'); return; }
-  const user = $('userName').value.trim();
-  if(!user){ showFlash('Upar apna naam likho.', 'dup'); $('userName').focus(); return; }
-  const combos = new Set(pending.map(p=>p.seller+'|'+p.channel+'|'+p.courier)).size;
-  if(!(await uiConfirm('Submit karein?', pending.length + ' AWB submit honge aur ' + combos + ' manifest banenge.', 'Submit karo'))) return;
+  if(!cur){ return; }
+  if(!pending.length){ showFlash('Scan at least one AWB before submitting.', 'dup'); return; }
+  if(!(await uiConfirm('Submit manifest?', pending.length + ' AWB will be submitted in manifest ' + cur.id + '.', 'Submit'))) return;
   stopCamera();
-  const btn = $('submitBtn'); btn.disabled = true; btn.textContent = 'Submit ho raha hai...';
+  const btn = $('submitBtn'); btn.disabled = true; btn.textContent = 'Submitting...';
   try{
-    const payload = {user, scans: pending.map(p=>({awb:p.awb, seller:p.seller, channel:p.channel, courier:p.courier, remark:p.remark, ts:p.ts}))};
+    const payload = {scans: pending.map(p=>({awb:p.awb, seller:cur.seller, channel:cur.channel, courier:cur.courier, remark:p.remark, ts:p.ts}))};
     const r = await gs('submitManifests', payload);
     r.manifests.forEach(m=> m.rows.forEach(x=> known.add(x.awb)));
     (r.duplicates||[]).forEach(a=> known.add(a));
-    pending = []; pendingSet.clear(); renderPending(); lsSet(LS.draft, '[]');
-    lastResult = r;
-    showResult(r);
+    if(!r.manifests.length){
+      const d = new Set(r.duplicates||[]);
+      pending = pending.filter(p=> !d.has(p.awb)); pendingSet.clear(); pending.forEach(p=>pendingSet.add(p.awb));
+      renderPending(); saveDraft();
+      showFlash('Nothing was saved: all AWB were already submitted earlier.', 'dup');
+    }else{
+      lastResult = r;
+      resetManifest();
+      showResult(r);
+    }
   }catch(e){
-    showFlash('Submit nahi hua: ' + e.message + ' (data safe hai, dobara try karo)', 'dup');
-  }finally{ btn.disabled = false; btn.textContent = 'Submit & Manifest banao'; }
+    showFlash('Submit failed: ' + e.message + ' (your scans are safe, please try again)', 'dup');
+  }finally{ btn.disabled = false; btn.textContent = 'Submit Manifest'; }
 });
 function showResult(r){
   const list = r.manifests.map(m=>`<div class="mid"><span>${esc(m.id)}</span><b>${m.rows.length}</b></div>`).join('');
-  const warn = (r.duplicates && r.duplicates.length) ? `<div class="warnbox">${r.duplicates.length} AWB pehle se sheet me the - skip kiye gaye.</div>` : '';
-  const warn2 = (r.invalid && r.invalid.length) ? `<div class="warnbox">${r.invalid.length} AWB invalid the - skip kiye gaye.</div>` : '';
-  modal(`<h2>Submit ho gaya - ${r.saved} AWB</h2>
-    <p>${r.manifests.length} manifest ban gaye. Download chuno:</p>${list}${warn}${warn2}
+  const warn = (r.duplicates && r.duplicates.length) ? `<div class="warnbox">${r.duplicates.length} AWB were already in the sheet and were skipped.</div>` : '';
+  const warn2 = (r.invalid && r.invalid.length) ? `<div class="warnbox">${r.invalid.length} AWB were invalid and were skipped.</div>` : '';
+  modal(`<h2>Manifest submitted - ${r.saved} AWB</h2>
+    <p>Choose a download:</p>${list}${warn}${warn2}
     <div class="dl-grid"><button class="btn primary" data-dl="pdf">Download PDF</button><button class="btn" data-dl="csv">Download CSV</button><button class="btn" data-dl="xlsx">Download Excel</button></div>
-    <div class="btn-row" style="justify-content:flex-end"><button class="btn" id="resClose">Band karo / Naya scan</button></div>`);
+    <div class="btn-row" style="justify-content:flex-end"><button class="btn" id="resClose">Close - start new manifest</button></div>`);
   $('modalRoot').querySelectorAll('[data-dl]').forEach(b=> b.onclick = ()=> runDownload(b.dataset.dl, r.manifests));
-  $('resClose').onclick = ()=>{ closeModal(); focusScan(); };
+  $('resClose').onclick = ()=>{ closeModal(); $('selSeller').focus(); };
 }
 
 /* ---------- Dashboard ---------- */
@@ -728,13 +875,14 @@ function setPreset(p){
   if(p==='yest'){ f = t = shiftDay(TODAY,-1); }
   else if(p==='7'){ f = shiftDay(TODAY,-6); }
   else if(p==='month'){ f = TODAY.slice(0,8)+'01'; }
+  else if(p==='all'){ f = '2020-01-01'; t = '2099-12-31'; }
   $('dFrom').value = f; $('dTo').value = t;
 }
 $('dashPresets').addEventListener('click', e=>{ const b = e.target.closest('[data-p]'); if(b){ setPreset(b.dataset.p); loadDash(); } });
 $('dashGo').addEventListener('click', loadDash);
 
 function bars(items, total, max){
-  if(!items.length) return '<div class="empty">Data nahi hai</div>';
+  if(!items.length) return '<div class="empty">No data</div>';
   const top = items[0].count || 1;
   return items.slice(0, max||200).map((it,i)=>{
     const w = Math.max(2, Math.round(it.count/top*100)), pct = total ? Math.round(it.count/total*100) : 0;
@@ -742,7 +890,7 @@ function bars(items, total, max){
   }).join('');
 }
 function donut(items, total){
-  if(!items.length) return '<div class="empty">Data nahi hai</div>';
+  if(!items.length) return '<div class="empty">No data</div>';
   let acc = 0, circles = '';
   items.forEach((it,i)=>{
     const p = it.count/total*100;
@@ -750,10 +898,10 @@ function donut(items, total){
     acc += p;
   });
   const leg = items.map((it,i)=>`<div><i style="background:${PAL[i%PAL.length]}"></i>${esc(it.name)} <b style="font-family:var(--mono)">${it.count}</b></div>`).join('');
-  return `<div class="donut-wrap"><svg viewBox="0 0 42 42" width="150" height="150"><circle r="15.9" cx="21" cy="21" fill="none" stroke="#19231c" stroke-width="6"></circle>${circles}<text x="21" y="22.5" text-anchor="middle" fill="#eef3ec" font-size="6" font-family="monospace" font-weight="700">${total}</text></svg><div class="legend">${leg}</div></div>`;
+  return `<div class="donut-wrap"><svg viewBox="0 0 42 42" width="150" height="150"><circle r="15.9" cx="21" cy="21" fill="none" stroke="#e7ecf6" stroke-width="6"></circle>${circles}<text x="21" y="22.5" text-anchor="middle" fill="#1b2440" font-size="6" font-family="monospace" font-weight="700">${total}</text></svg><div class="legend">${leg}</div></div>`;
 }
 function columns(items, color, labelFn){
-  if(!items.length) return '<div class="empty">Data nahi hai</div>';
+  if(!items.length) return '<div class="empty">No data</div>';
   const max = Math.max.apply(null, items.map(i=>i.count)) || 1;
   return '<div class="cols">' + items.map(i=>`<div class="col" title="${esc(i.name)}: ${i.count}"><div class="v">${i.count||''}</div><div class="bar" style="height:${Math.max(2, i.count/max*100)}%;background:${color}"></div><div class="x">${esc(labelFn(i.name))}</div></div>`).join('') + '</div>';
 }
@@ -761,20 +909,22 @@ let dashBusy = false;
 async function loadDash(){
   if(dashBusy) return; dashBusy = true;
   const from = $('dFrom').value || TODAY, to = $('dTo').value || from;
-  $('dashStamp').textContent = 'Load ho raha hai...';
+  $('dashStamp').textContent = 'Loading...';
   try{
     const a = await gs('getDashboard', from, to);
     const hoursFull = [];
     for(let h=0; h<24; h++){ const k = ('0'+h).slice(-2); const f = a.hours.find(x=>x.name===k); hoursFull.push({name:k, count:f?f.count:0}); }
+    const mt = a.meta || {};
+    const metaHint = `<div class="hint" style="margin-bottom:12px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:10px">Reading from <b>${esc(mt.sheet||'')}</b> - total scans in sheet: <b>${mt.sheetRows||0}</b>${mt.latest ? ' (dates ' + esc(mt.earliest) + ' to ' + esc(mt.latest) + ')' : ''} - in this date range: <b>${a.total}</b>.${(!a.total && mt.sheetRows) ? ' <b style="color:var(--bad)">Data exists on other dates - press "All time" or change the dates.</b>' : ''}</div>`;
     const rem = a.remarks.map(r=>`<span class="chip">${esc(r.name)}: <b>${r.count}</b></span>`).join('');
-    $('dashBody').innerHTML = `
+    $('dashBody').innerHTML = metaHint + `
       <div class="kpis">
         <div class="kpi" style="--k:var(--c1)"><div class="n">${a.total}</div><div class="l">Total AWB Scanned</div></div>
         <div class="kpi" style="--k:var(--c2)"><div class="n">${a.manifests}</div><div class="l">Manifests</div></div>
         <div class="kpi" style="--k:var(--c3)"><div class="n">${a.sellers.length}</div><div class="l">Sellers</div></div>
         <div class="kpi" style="--k:var(--c4)"><div class="n">${a.couriers.length}</div><div class="l">Couriers</div></div>
         <div class="kpi" style="--k:var(--c5)"><div class="n">${a.users.length}</div><div class="l">Users active</div></div>
-        <div class="kpi" style="--k:var(--bad)"><div class="n">${a.remarks.reduce((s,r)=>s+r.count,0)}</div><div class="l">Remark wale AWB</div></div>
+        <div class="kpi" style="--k:var(--bad)"><div class="n">${a.remarks.reduce((s,r)=>s+r.count,0)}</div><div class="l">AWB with remarks</div></div>
       </div>
       ${rem ? '<div class="chips" style="margin:-4px 0 16px">'+rem+'</div>' : ''}
       <div class="grid2">
@@ -789,11 +939,11 @@ async function loadDash(){
       </div>
       <div class="card panel"><h3>Seller / Channel / Courier summary</h3>
         <div class="tbl-wrap"><table><thead><tr><th>Seller</th><th>Channel</th><th>Courier</th><th class="r">AWB</th></tr></thead><tbody>
-        ${a.combos.map(c=>`<tr><td>${esc(c.seller)}</td><td>${esc(c.channel)}</td><td>${esc(c.courier)}</td><td class="r"><b>${c.count}</b></td></tr>`).join('') || '<tr><td colspan="4" class="empty">Is range me data nahi hai</td></tr>'}
+        ${a.combos.map(c=>`<tr><td>${esc(c.seller)}</td><td>${esc(c.channel)}</td><td>${esc(c.courier)}</td><td class="r"><b>${c.count}</b></td></tr>`).join('') || '<tr><td colspan="4" class="empty">No data in this range</td></tr>'}
         </tbody></table></div></div>`;
     $('dashStamp').textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN',{hour12:false});
   }catch(e){
-    $('dashBody').innerHTML = '<div class="empty" style="color:var(--bad)">Dashboard load nahi hua: ' + esc(e.message) + '</div>';
+    $('dashBody').innerHTML = '<div class="empty" style="color:var(--bad)">Could not load dashboard: ' + esc(e.message) + '</div>';
     $('dashStamp').textContent = '';
   }finally{ dashBusy = false; }
 }
@@ -813,18 +963,18 @@ function groupManifests(rows){
 async function doSearch(){
   const f = {q:$('hQ').value.trim(), from:$('hFrom').value, to:$('hTo').value, seller:$('hSeller').value, channel:$('hChannel').value, courier:$('hCourier').value};
   if(!f.q && !f.from && !f.to && !f.seller && !f.channel && !f.courier){ f.from = f.to = TODAY; $('hFrom').value = TODAY; $('hTo').value = TODAY; }
-  $('hSummary').textContent = 'Search ho raha hai...';
+  $('hSummary').textContent = 'Searching...';
   try{
     const r = await gs('searchScans', f);
     hist = {manifests: groupManifests(r.rows), q: f.q.toUpperCase()};
     renderHist(r);
-  }catch(e){ $('hSummary').textContent = ''; showFlash('Search fail: ' + e.message, 'dup'); }
+  }catch(e){ $('hSummary').textContent = ''; showFlash('Search failed: ' + e.message, 'dup'); }
 }
 function renderHist(r){
   const ms = hist.manifests;
   $('hEmpty').hidden = ms.length>0; $('hWrap').hidden = !ms.length; $('hAll').hidden = !ms.length;
-  if(!ms.length){ $('hEmpty').textContent = 'Koi data nahi mila.'; $('hSummary').textContent = ''; return; }
-  $('hSummary').textContent = r.total + ' AWB, ' + ms.length + ' manifest mile.' + (r.truncated ? ' (Bahut zyada data - pehle ' + r.rows.length + ' AWB hi laaye gaye, filter chhota karo.)' : '');
+  if(!ms.length){ $('hEmpty').textContent = 'No data found.'; $('hSummary').textContent = ''; return; }
+  $('hSummary').textContent = r.total + ' AWB, ' + ms.length + ' manifest(s) found.' + (r.truncated ? ' (Too much data - only the first ' + r.rows.length + ' AWB were loaded, please narrow the filters.)' : '');
   $('hBody').innerHTML = ms.map((m,i)=>`
     <tr><td>${esc(m.id)}</td><td>${esc(m.date)}</td><td>${esc(m.seller)}</td><td>${esc(m.channel)}</td><td>${esc(m.courier)}</td><td class="r"><b>${m.rows.length}</b></td><td>${esc(m.user)}</td>
     <td><div class="btn-row"><button class="btn sm" data-h="${i}" data-k="view">View</button><button class="btn sm" data-h="${i}" data-k="pdf">PDF</button><button class="btn sm" data-h="${i}" data-k="csv">CSV</button><button class="btn sm" data-h="${i}" data-k="xlsx">Excel</button></div></td></tr>
@@ -840,51 +990,44 @@ $('hAll').addEventListener('click', e=>{ const b = e.target.closest('[data-all]'
 $('hGo').addEventListener('click', doSearch);
 $('hQ').addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
 $('hToday').addEventListener('click', ()=>{ $('hFrom').value = TODAY; $('hTo').value = TODAY; doSearch(); });
-$('hReset').addEventListener('click', ()=>{ ['hQ','hFrom','hTo','hSeller','hChannel','hCourier'].forEach(id=> $(id).value=''); hist = {manifests:[],q:''}; $('hWrap').hidden = true; $('hAll').hidden = true; $('hEmpty').hidden = false; $('hEmpty').textContent = 'AWB, date ya filter lagakar Search dabao.'; $('hSummary').textContent=''; });
+$('hReset').addEventListener('click', ()=>{ ['hQ','hFrom','hTo','hSeller','hChannel','hCourier'].forEach(id=> $(id).value=''); hist = {manifests:[],q:''}; $('hWrap').hidden = true; $('hAll').hidden = true; $('hEmpty').hidden = false; $('hEmpty').textContent = 'Search by AWB, date or filters.'; $('hSummary').textContent=''; });
 
 /* ---------- Settings / Mail ---------- */
 function renderSettings(){
-  $('sheetInfo').innerHTML = 'Connected: <b>' + esc(initData.sheetName) + '</b> - <a href="' + esc(initData.sheetUrl) + '" target="_blank" rel="noopener" style="color:var(--accent)">Sheet kholo</a>';
+  $('sheetInfo').innerHTML = 'Connected: <b>' + esc(initData.sheetName) + '</b> - <a href="' + esc(initData.sheetUrl) + '" target="_blank" rel="noopener" style="color:var(--accent)">Open sheet</a>';
   const hs = $('mHour'); hs.innerHTML = '';
   for(let h=0; h<24; h++){ const o = document.createElement('option'); o.value = h; const hh = h%12===0?12:h%12; o.textContent = hh + ':00 ' + (h<12?'AM':'PM'); hs.appendChild(o); }
   $('mEnabled').checked = !!mailCfg.enabled; $('mHour').value = mailCfg.hour; $('mWhich').value = mailCfg.which || 'today';
   $('mInternal').value = mailCfg.internal || ''; $('mSeller').checked = mailCfg.sellerMails !== false;
-  $('sellerMailBody').innerHTML = M.sellers.map((s,i)=>`<tr><td>${esc(s.name)}</td><td><input type="email" data-sm="${i}" value="${esc(s.email)}" style="width:100%;min-width:220px" placeholder="customer@brand.com"></td></tr>`).join('');
+  $('emailTabLink').href = initData.sheetUrl.replace(/#.*$/, '') + '#gid=' + initData.emailGid;
   $('mDate').value = TODAY;
 }
 $('mSave').addEventListener('click', async ()=>{
-  const emails = Array.from(document.querySelectorAll('[data-sm]')).map(inp=>({name:M.sellers[+inp.dataset.sm].name, email:inp.value.trim()}));
-  const s = {enabled:$('mEnabled').checked, hour:+$('mHour').value, which:$('mWhich').value, internal:$('mInternal').value.trim(), sellerMails:$('mSeller').checked, sellerEmails:emails};
+  const s = {enabled:$('mEnabled').checked, hour:+$('mHour').value, which:$('mWhich').value, internal:$('mInternal').value.trim(), sellerMails:$('mSeller').checked};
   $('mSave').disabled = true;
   try{
     const r = await gs('saveMailSettings', s);
-    mailCfg = r.mail; M = r.masters; showFlash('Mail settings save ho gayi' + (s.enabled ? ' - roz ' + $('mHour').selectedOptions[0].textContent + ' ke aas-paas mail jayegi.' : ' (auto mail band).'), 'ok');
-  }catch(e){ showFlash('Save nahi hui: ' + e.message, 'dup'); }
+    mailCfg = r.mail; showFlash('Mail settings saved' + (s.enabled ? ' - the mail will go out daily around ' + $('mHour').selectedOptions[0].textContent + '.' : ' (auto mail is off).'), 'ok');
+  }catch(e){ showFlash('Could not save: ' + e.message, 'dup'); }
   $('mSave').disabled = false;
 });
 document.querySelectorAll('[data-send]').forEach(b=> b.addEventListener('click', async ()=>{
   const k = b.dataset.send;
-  $('mSendMsg').textContent = 'Mail bhej raha hai...';
+  $('mSendMsg').textContent = 'Sending mail...';
   try{
     const r = await gs('sendSummaryNow', {date:$('mDate').value || TODAY, internal:(k==='internal'||k==='both'), sellers:(k==='sellers'||k==='both')});
-    if(r.noData){ $('mSendMsg').textContent = 'Is date ka koi scan data nahi hai - mail nahi gayi.'; return; }
-    let t = 'Bhej di: internal ' + r.internalSent + ', seller ' + r.sellerSent + '.';
+    if(r.noData){ $('mSendMsg').textContent = 'There is no scan data for this date - no mail was sent.'; return; }
+    let t = 'Sent: internal ' + r.internalSent + ', seller ' + r.sellerSent + '.';
     if(r.note) t += ' ' + r.note;
-    if(r.noEmail.length) t += ' Email nahi mila: ' + r.noEmail.join(', ') + '.';
+    if(r.noEmail.length) t += ' No email found for: ' + r.noEmail.join(', ') + '.';
     $('mSendMsg').textContent = t;
-  }catch(e){ $('mSendMsg').textContent = 'Mail fail: ' + e.message; }
+  }catch(e){ $('mSendMsg').textContent = 'Mail failed: ' + e.message; }
 }));
-$('changeSheet').addEventListener('click', async ()=>{
-  const u = $('newSheetUrl').value.trim(); if(!u) return;
-  try{ const r = await gs('setSheetLink', u); showFlash('Sheet badal gayi: ' + r.name + ' - page reload karo.', 'ok'); }
-  catch(e){ showFlash('Link kaam nahi kiya: ' + e.message, 'dup'); }
-});
 
 /* ---------- Init ---------- */
 function setBadge(t, err){ const b = $('syncBadge'); b.textContent = t; b.className = 'sync' + (err?' err':''); }
 async function boot(){
   $('whTag').textContent = WH; document.title = 'Return Receiving - ' + WH;
-  $('userName').value = lsGet(LS.user, '');
   $('hhdMode').checked = lsGet(LS.hhd,'0')==='1'; $('soundOn').checked = lsGet(LS.snd,'1')!=='0';
   applyHhd();
   setBadge('Connecting...');
@@ -902,19 +1045,19 @@ async function boot(){
   }
   initData = d; M = d.masters; mailCfg = d.mail; TODAY = d.today;
   known = new Set(d.awbs);
-  fillAllMasters(); loadDraft(); renderPending(); renderSettings();
+  fillAllMasters(); loadDraft(); updateManifestUi(); renderSettings();
   setPreset('today');
-  setBadge('Sheet live - ' + known.size + ' AWB');
+  setBadge('Sheet connected - ' + known.size + ' AWB');
   focusScan();
 }
 $('setupBtn').addEventListener('click', async ()=>{
   $('setupErr').textContent = ''; $('setupBtn').disabled = true;
   try{ await gs('setSheetLink', $('setupUrl').value.trim()); delete $('setup').dataset.lock; $('setup').hidden = true; $('tab-scan').hidden = false; boot(); }
-  catch(e){ $('setupErr').textContent = e.message + ' (Sheet ko apne Google account se access hona chahiye.)'; }
+  catch(e){ $('setupErr').textContent = e.message + ' (This Google account needs edit access to the sheet.)'; }
   $('setupBtn').disabled = false;
 });
 window.addEventListener('load', boot);
-window.addEventListener('beforeunload', e=>{ if(pending.length){ lsSet(LS.draft, JSON.stringify(pending)); } });
+window.addEventListener('beforeunload', ()=>{ saveDraft(); });
 </script>
 </body>
 </html>

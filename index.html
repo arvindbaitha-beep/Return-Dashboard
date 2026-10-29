@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<base target="_top">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Return Receiving</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
@@ -50,6 +50,30 @@
   select.miss{border-color:#e11d48;box-shadow:0 0 0 3px #fecdd3;}
   .rsel{padding:4px 6px;font-size:12px;min-width:96px;}
   select:disabled,input:disabled{opacity:.55;cursor:not-allowed;}
+  .locked .wrap{display:none;}
+  .login-screen{position:fixed;top:0;left:0;right:0;bottom:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(135deg,#312e81 0%,#9d174d 55%,#c2410c 100%);overflow:auto;}
+  .login-card{background:#fff;border-radius:18px;padding:26px 24px;width:100%;max-width:400px;box-shadow:0 20px 50px rgba(0,0,0,.35);}
+  .login-card h2{margin:12px 0 4px;font-size:22px;color:#312e81;}
+  .login-card .field{margin-top:12px;} .login-card input{width:100%;}
+  .login-card .btn.primary{width:100%;padding:14px;font-size:15px;margin-top:18px;}
+  .login-brand{display:flex;align-items:center;gap:10px;} .login-brand img{width:44px;height:44px;border-radius:10px;object-fit:contain;background:#fff;}
+  .userbox{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .userchip{background:#fff;color:#312e81;font:800 12px var(--mono);border-radius:20px;padding:6px 12px;}
+  .userbox .btn{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.5);}
+  .who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .role-tag{font-size:10px;font-weight:800;border-radius:20px;padding:2px 8px;color:#fff;}
+  .rtypes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;}
+  .rtype{display:flex;gap:12px;align-items:center;text-align:left;background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;font-family:var(--sans);color:var(--ink);}
+  .rtype b{flex:none;width:30px;height:30px;border-radius:50%;background:#e0e7ff;color:#312e81;display:flex;align-items:center;justify-content:center;font:800 14px var(--mono);}
+  .rtype strong{display:block;font-size:14px;} .rtype small{display:block;font-size:11px;color:var(--ink-dim);margin-top:2px;}
+  .rtype:hover{border-color:#7c3aed;}
+  .rtype.on{background:linear-gradient(120deg,#312e81,#6d28d9);color:#fff;border-color:#312e81;box-shadow:0 6px 14px rgba(49,46,129,.3);}
+  .rtype.on b{background:#fff;color:#312e81;} .rtype.on small{color:#ddd6fe;}
+  tr.grp td{background:#ede9fe;color:#312e81;font-weight:800;border-top:2px solid #c4b5fd;}
+  tr.tot td{background:#312e81;color:#fff;font-weight:800;}
+  .tag-cancel{font-size:11px;font-weight:800;border-radius:20px;padding:2px 9px;background:#ffe4e6;color:#be123c;}
+  .tag-fwd{font-size:11px;font-weight:800;border-radius:20px;padding:2px 9px;background:#dcfce7;color:#166534;}
+  tr.cancelled td{background:#fff1f2;}
   .alert-overlay{z-index:100;background:rgba(127,29,29,.72);}
   .alert-box{border:4px solid #e11d48;text-align:center;max-width:460px;}
   .alert-icon{width:64px;height:64px;margin:0 auto 8px;border-radius:50%;background:#e11d48;color:#fff;font:800 40px var(--sans);display:flex;align-items:center;justify-content:center;}
@@ -62,7 +86,7 @@
 
   .field{display:flex;flex-direction:column;gap:5px;min-width:0;}
   .field label{font-size:11px;color:var(--ink-dim);font-family:var(--mono);letter-spacing:.04em;}
-  select,input[type=text],input[type=date],input[type=number],input[type=email],textarea{
+  select,input[type=text],input[type=password],input[type=date],input[type=number],input[type=email],textarea{
     background:#fff;border:1px solid var(--line);color:var(--ink);padding:10px 11px;border-radius:7px;font-family:var(--mono);font-size:14px;max-width:100%;
   }
   select{min-width:150px;}
@@ -147,7 +171,7 @@
   .sync{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;background:#dcfce7;color:#166534;font-weight:700;}
   .sync.err{background:#ffe4e6;color:#9f1239;}
 
-  .overlay{position:fixed;inset:0;background:rgba(27,36,64,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;}
+  .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(27,36,64,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;}
   .modal{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;max-width:520px;width:100%;max-height:90vh;overflow:auto;}
   .modal h2{margin:0 0 6px;font-size:18px;}
   .modal p{color:var(--ink-dim);font-size:13px;margin:6px 0 14px;}
@@ -180,6 +204,11 @@
       </div>
     </div>
     <div class="who">
+      <div class="userbox" id="userBox" hidden>
+        <span class="userchip" id="userChip"></span>
+        <button class="btn sm" id="pwBtn" type="button">Password</button>
+        <button class="btn sm" id="logoutBtn" type="button">Logout</button>
+      </div>
       <span class="sync" id="syncBadge">Loading...</span>
     </div>
   </div>
@@ -189,21 +218,13 @@
     <div class="side-title">MENU</div>
     <button class="tab on" data-tab="scan" style="--t:#3730a3"><i></i>Scan &amp; Manifest</button>
     <button class="tab" data-tab="dash" style="--t:#be185d"><i></i>Dashboard</button>
+    <button class="tab" data-tab="rep" style="--t:#7c3aed"><i></i>Reports</button>
     <button class="tab" data-tab="hist" style="--t:#0f766e"><i></i>History / Reprint</button>
     <button class="tab" data-tab="set" style="--t:#b45309"><i></i>Settings &amp; Mail</button>
   </aside>
   <main style="min-width:0">
 
   <div class="flash" id="flash"></div>
-
-  <!-- SETUP (sirf pehli baar) -->
-  <section id="setup" class="card" hidden>
-    <h3 style="margin-top:0">Connect your Google Sheet</h3>
-    <p class="hint">The Google Sheet link is built in. If the connection failed, check that this Google account has edit access to the sheet and press Connect. The Return_Scans, Return_Manifests, Return_Masters and Return_Seller_Emails tabs are created automatically.</p>
-    <div class="row"><div class="field grow"><label for="setupUrl">Google Sheet link</label><input type="text" id="setupUrl" placeholder="https://docs.google.com/spreadsheets/d/..."></div>
-    <button class="btn primary" id="setupBtn">Connect Sheet</button></div>
-    <div class="hint" id="setupErr" style="color:var(--bad);margin-top:8px"></div>
-  </section>
 
   <!-- SCAN -->
   <section id="tab-scan">
@@ -285,11 +306,40 @@
     <div id="dashBody"><div class="empty">Loading dashboard...</div></div>
   </section>
 
+  <!-- REPORTS -->
+  <section id="tab-rep" hidden>
+    <div class="card">
+      <div class="step-title">Select report</div>
+      <div class="rtypes" id="repTypes"></div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="btn-row" id="repPresets">
+          <button class="btn sm" data-rp="today">Today</button>
+          <button class="btn sm" data-rp="yest">Yesterday</button>
+          <button class="btn sm" data-rp="7">Last 7 days</button>
+          <button class="btn sm" data-rp="month">This month</button>
+        </div>
+        <div class="field"><label for="rFrom">From</label><input type="date" id="rFrom"></div>
+        <div class="field"><label for="rTo">To</label><input type="date" id="rTo"></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div class="field"><label for="rSeller">Customer (Seller)</label><select id="rSeller"></select></div>
+        <div class="field"><label for="rChannel">Channel</label><select id="rChannel"></select></div>
+        <div class="field"><label for="rCourier">Courier</label><select id="rCourier"></select></div>
+        <div class="field" id="rUserWrap" hidden><label for="rUser">Scanned By (User ID)</label><select id="rUser"></select></div>
+        <button class="btn primary" id="repGo" type="button">Generate Report</button>
+      </div>
+    </div>
+    <div class="hint" id="repMsg" style="margin-bottom:10px"></div>
+    <div id="repBody"></div>
+  </section>
+
   <!-- HISTORY -->
   <section id="tab-hist" hidden>
     <div class="card">
       <div class="row">
-        <div class="field grow"><label for="hQ">AWB ya Manifest ID</label><input type="text" id="hQ" placeholder="AWB / RETN_..." autocomplete="off"></div>
+        <div class="field grow"><label for="hQ">AWB or Manifest ID</label><input type="text" id="hQ" placeholder="AWB / RETN_..." autocomplete="off"></div>
         <div class="field"><label for="hFrom">From</label><input type="date" id="hFrom"></div>
         <div class="field"><label for="hTo">To</label><input type="date" id="hTo"></div>
       </div>
@@ -297,6 +347,8 @@
         <div class="field"><label for="hSeller">Seller</label><select id="hSeller"></select></div>
         <div class="field"><label for="hChannel">Channel</label><select id="hChannel"></select></div>
         <div class="field"><label for="hCourier">Courier</label><select id="hCourier"></select></div>
+        <div class="field"><label for="hStatus">Status</label><select id="hStatus"><option value="">All</option><option value="FORWARD">Forward</option><option value="CANCELLED">Cancelled</option></select></div>
+        <div class="field" id="hUserWrap" hidden><label for="hUser">Scanned By (User ID)</label><select id="hUser"></select></div>
         <button class="btn primary" id="hGo">Search</button>
         <button class="btn" id="hToday">Today</button>
         <button class="btn" id="hReset">Reset</button>
@@ -309,7 +361,7 @@
       <button class="btn" data-all="xlsx">All as Excel</button>
     </div>
     <div class="tbl-wrap" id="hWrap" hidden>
-      <table><thead><tr><th>Manifest ID</th><th>Date</th><th>Seller</th><th>Channel</th><th>Courier</th><th class="r">AWB</th><th>By</th><th>Download</th></tr></thead>
+      <table><thead><tr><th>Manifest ID</th><th>Date</th><th>Seller</th><th>Channel</th><th>Courier</th><th class="r">AWB</th><th>By</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody id="hBody"></tbody></table>
     </div>
     <div class="empty" id="hEmpty">Search by AWB, date or filters.</div>
@@ -317,6 +369,19 @@
 
   <!-- SETTINGS -->
   <section id="tab-set" hidden>
+    <div class="card" id="usersCard">
+      <h3>User management</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>User ID</th><th>Name</th><th>Role</th><th>Status</th><th>Last login</th><th></th></tr></thead><tbody id="usersBody"></tbody></table></div>
+      <div class="row" style="margin-top:14px">
+        <div class="field"><label for="uId">User ID</label><input type="text" id="uId" maxlength="20" autocapitalize="characters" style="width:150px"></div>
+        <div class="field"><label for="uName">Name</label><input type="text" id="uName" maxlength="40" style="width:170px"></div>
+        <div class="field"><label for="uRole">Role</label><select id="uRole"><option value="USER">User (scan + own data)</option><option value="SUPERVISOR">Supervisor (all data)</option><option value="ADMIN">Admin (everything)</option></select></div>
+        <div class="field"><label for="uPw">Password (empty = keep)</label><input type="text" id="uPw" maxlength="60" autocomplete="off" style="width:160px"></div>
+        <button class="btn primary" id="uSave" type="button">Save user</button>
+        <button class="btn" id="uClear" type="button">Clear</button>
+      </div>
+      <div class="hint" style="margin-top:8px">New user: type a new User ID and a password (min 4 characters). Edit: press Edit on a row, change the fields and Save. Users are deactivated, not deleted, so their old scans keep their User ID.</div>
+    </div>
     <div class="card">
       <h3 style="margin-top:0">Google Sheet</h3>
       <div class="hint" id="sheetInfo"></div>
@@ -358,14 +423,42 @@
 
 </div>
 
+<div id="loginScreen" class="login-screen" hidden>
+  <div class="login-card">
+    <div class="login-brand"><img id="lgLogo" alt="Emiza"><div><div style="font:800 11px var(--mono);letter-spacing:.12em;color:#be185d">EMIZA</div><div style="font:800 15px var(--sans);color:#1b2440">Return Receiving</div></div></div>
+    <div id="lgLogin">
+      <h2>Login</h2>
+      <div class="hint">Enter your User ID and password.</div>
+      <div class="field"><label for="lgId">User ID</label><input type="text" id="lgId" autocomplete="username" autocapitalize="characters" spellcheck="false" maxlength="20"></div>
+      <div class="field"><label for="lgPw">Password</label><input type="password" id="lgPw" autocomplete="current-password" maxlength="60"></div>
+      <button class="btn primary" id="lgBtn" type="button">Login</button>
+    </div>
+    <div id="lgSetup" hidden>
+      <h2>First-time setup</h2>
+      <div class="hint">No users exist yet. Create the Admin account. The Admin can add all other users later.</div>
+      <div class="field"><label for="suId">Admin User ID</label><input type="text" id="suId" autocapitalize="characters" spellcheck="false" maxlength="20"></div>
+      <div class="field"><label for="suName">Name</label><input type="text" id="suName" maxlength="40"></div>
+      <div class="field"><label for="suPw">Password (min 6 characters)</label><input type="password" id="suPw" autocomplete="new-password" maxlength="60"></div>
+      <div class="field"><label for="suPw2">Confirm password</label><input type="password" id="suPw2" autocomplete="new-password" maxlength="60"></div>
+      <button class="btn primary" id="suBtn" type="button">Create Admin &amp; Login</button>
+    </div>
+    <div class="hint" id="lgErr" style="color:var(--bad);margin-top:12px;font-weight:700;min-height:18px"></div>
+  </div>
+</div>
+
 <div id="modalRoot"></div>
 
 <script>
-const WH = <?!= JSON.stringify(wh) ?>;
+/* ===== SETTINGS (edit once) ===== */
+const API_URL = 'https://script.google.com/macros/s/AKfycbywmz3IJoVrHuxywE_ONNpgZgFlbrnhiFLt9p67tt6Bd_4uES-_jeyfX12lnIwU7lRSlg/exec'.
+const DEFAULT_WH = 'Farrukhnagar';
+/* ================================= */
+const QS = new URLSearchParams(window.location.search);
+const WH = (QS.get('wh') || DEFAULT_WH).replace(/[^A-Za-z0-9 _-]/g,'').slice(0,30) || DEFAULT_WH;
 const REMARKS = ['Damaged','Wrong','Torn'];
 const MAX_LEN = 25;
 const PAL = ['#ff8a3d','#4fd1c5','#a78bfa','#60a5fa','#f472b6','#4fd17c','#fbbf24','#fb7185'];
-const LS = {draft:'ret_draft_v3', user:'ret_user', hhd:'ret_hhd', sel:'ret_sel', snd:'ret_snd'};
+const LS = {draft:'ret_draft_v3', user:'ret_user', hhd:'ret_hhd', sel:'ret_sel', snd:'ret_snd', masters:'ret_masters_v1', auth:'ret_auth'};
 
 let M = {sellers:[],channels:[],couriers:[]};
 let known = new Set();
@@ -375,14 +468,54 @@ let mailCfg = {};
 let initData = null;
 let lastResult = null;
 let hist = {manifests:[], q:''};
-let TODAY = '';
+let usedIds = new Set();
+function istShift(ms){ return new Date(Date.now() + 19800000 + (ms||0)); }
+function istYmd(d){ d = d || istShift(); return d.getUTCFullYear()+'-'+('0'+(d.getUTCMonth()+1)).slice(-2)+'-'+('0'+d.getUTCDate()).slice(-2); }
+let TODAY = istYmd();
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function apiUrl(){ const u = String(API_URL || '').trim(); return /^https:\/\/script\.google\.com\/(a\/[^\/]+\/)?macros\/s\/[^\s]+\/exec$/.test(u) ? u : ''; }
+let AUTH = null;            // {token, user:{id,name,role}}
+try{ AUTH = JSON.parse(lsGet(LS.auth,'null')); }catch(e){ AUTH = null; }
+function rpc(fn, args){
+  const token = AUTH ? AUTH.token : '';
+  // Inside Apps Script (google.script.run) or on GitHub Pages / any web host (fetch to the Web App URL)
+  if(window.google && window.google.script && window.google.script.run){
+    return new Promise((res, rej)=>{
+      google.script.run.withSuccessHandler(res).withFailureHandler(e=>rej(new Error(e && e.message ? e.message : String(e)))).apiCall(fn, args, token);
+    });
+  }
+  const url = apiUrl();
+  if(!url) return Promise.reject(new Error('API_NOT_SET'));
+  const ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  const timer = ctl ? setTimeout(()=> ctl.abort(), 120000) : null;
+  return fetch(url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({fn:fn, args:args, token:token}), redirect:'follow', signal: ctl ? ctl.signal : undefined})
+    .then(r=> r.text())
+    .then(txt=>{
+      try{ return JSON.parse(txt); }catch(e){ throw new Error('Server reply was not valid. Deploy the Web App with access = "Anyone" and use the /exec URL.'); }
+    })
+    .catch(e=>{ throw new Error(e && e.name==='AbortError' ? 'Server timed out' : (e && e.message==='Failed to fetch' ? 'Cannot reach the server - check internet and the Web App URL' : e.message)); })
+    .then(v=>{ if(timer) clearTimeout(timer); return v; }, e=>{ if(timer) clearTimeout(timer); throw e; });
+}
 function gs(fn, ...args){
-  return new Promise((res, rej)=>{
-    google.script.run.withSuccessHandler(res).withFailureHandler(e=>rej(new Error(e && e.message ? e.message : String(e))))[fn](...args);
+  return rpc(fn, args).then(j=>{
+    if(!j || !j.ok){
+      if(j && j.error === 'AUTH'){ sessionExpired(); throw new Error('Session expired - please log in again.'); }
+      throw new Error((j && j.error) || 'Server error');
+    }
+    return j.data;
   });
+}
+function code4(s){ s = String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,''); return (s+'XXXX').slice(0,4); }
+function codeFor(list, name){ const x = list.filter(o=> o.name.toLowerCase()===String(name).toLowerCase())[0]; return code4(x && x.code ? x.code : name); }
+function nextManifestId(seller, channel, courier){
+  const d = istShift();
+  const ds = ('0'+d.getUTCDate()).slice(-2) + ('0'+(d.getUTCMonth()+1)).slice(-2) + String(d.getUTCFullYear()).slice(2);
+  const base = 'RETN_' + codeFor(M.sellers, seller) + '_' + codeFor(M.channels, channel) + '_' + codeFor(M.couriers, courier) + '_' + ds;
+  let id = base, n = 2;
+  while(usedIds.has(id)){ id = base + '-' + ('0'+n).slice(-2); n++; }
+  return id;
 }
 function lsGet(k, d){ try{ const v = localStorage.getItem(k); return v==null? d : v; }catch(e){ return d; } }
 function lsSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
@@ -434,13 +567,15 @@ function uiConfirm(title, text, yes){
 
 /* ---------- Tabs ---------- */
 function openTab(t){
-  ['scan','dash','hist','set'].forEach(x=> $('tab-'+x).hidden = (x!==t));
+  ['scan','dash','rep','hist','set'].forEach(x=> $('tab-'+x).hidden = (x!==t));
   document.querySelectorAll('.tab').forEach(b=> b.classList.toggle('on', b.dataset.tab===t));
   if(t!=='scan') stopCamera();
   if(t==='dash') loadDash();
+  if(t==='rep' && !repData) repGenerate();
+  if(t==='set' && AUTH && AUTH.user.role==='ADMIN') loadUsers();
   if(t==='scan') focusScan();
 }
-$('tabs').addEventListener('click', e=>{ const b = e.target.closest('.tab'); if(b && !$('setup').dataset.lock) openTab(b.dataset.tab); });
+$('tabs').addEventListener('click', e=>{ const b = e.target.closest('.tab'); if(b) openTab(b.dataset.tab); });
 
 /* ---------- Masters / selects ---------- */
 function fillSelect(el, list, placeholder){
@@ -452,6 +587,9 @@ function fillAllMasters(){
   fillSelect($('selSeller'), M.sellers.map(x=>x.name), '- Select Seller -');
   fillSelect($('selChannel'), M.channels.map(x=>x.name), '- Select Channel -');
   fillSelect($('selCourier'), M.couriers.map(x=>x.name), '- Select Courier -');
+  fillSelect($('rSeller'), M.sellers.map(x=>x.name), 'All Customers');
+  fillSelect($('rChannel'), M.channels.map(x=>x.name), 'All Channels');
+  fillSelect($('rCourier'), M.couriers.map(x=>x.name), 'All Couriers');
   fillSelect($('hSeller'), M.sellers.map(x=>x.name), 'All Sellers');
   fillSelect($('hChannel'), M.channels.map(x=>x.name), 'All Channels');
   fillSelect($('hCourier'), M.couriers.map(x=>x.name), 'All Couriers');
@@ -496,24 +634,17 @@ function updateManifestUi(){
   }
   renderPending();
 }
-async function tryCreateManifest(){
-  if(cur || creating) return;
+function newSid(){ return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,10) + Math.random().toString(36).slice(2,6); }
+function tryCreateManifest(){
+  if(cur) return;
   const seller = $('selSeller').value, channel = $('selChannel').value, courier = $('selCourier').value;
   if(!seller || !channel || !courier) return;
-  creating = true; lockSelects(true); setStatus('Creating manifest...', '');
-  try{
-    const r = await gs('previewManifestId', {seller, channel, courier});
-    cur = {seller, channel, courier, id:r.id};
-    pending = []; pendingSet.clear();
-    saveDraft();
-    showFlash('Manifest created: ' + cur.id, 'ok');
-    setStatus('Manifest ' + cur.id + ' is open - scan AWB now.', 'ok');
-  }catch(e){
-    lockSelects(false);
-    showFlash('Could not create manifest: ' + e.message, 'dup');
-  }
-  creating = false; updateManifestUi();
-  if(cur) setStatus('Manifest ' + cur.id + ' is open - scan AWB now.', 'ok');
+  cur = {seller, channel, courier, id: nextManifestId(seller, channel, courier), sid: newSid()};
+  pending = []; pendingSet.clear();
+  saveDraft();
+  updateManifestUi();
+  showFlash('Manifest created: ' + cur.id, 'ok');
+  setStatus('Manifest ' + cur.id + ' is open - scan AWB now.', 'ok');
   focusScan();
 }
 SELS.forEach(id=> $(id).addEventListener('change', ()=>{ $(id).classList.remove('miss'); updateSelHint(); tryCreateManifest(); }));
@@ -607,22 +738,39 @@ function handleScan(raw){
   $('selRemark').value = '';
   setStatus('Added  ' + id + (remark ? '  [' + remark + ']' : '') + '  ->  ' + cur.id, 'ok');
   okBeep();
-  renderPending();
+  addRowFast(pending[pending.length-1]);
   saveDraftSoon();
   return true;
 }
 scanInput.addEventListener('keydown', e=>{
-  if(e.key==='Enter' || (e.key==='Tab' && scanInput.value)){
+  if(e.key==='Enter' || e.keyCode===13 || e.which===13 || (e.key==='Tab' && scanInput.value)){
     e.preventDefault();
     const v = scanInput.value; scanInput.value = '';
     handleScan(v);
     focusScan();
   }
 });
+scanInput.addEventListener('blur', ()=>{
+  setTimeout(()=>{ if($('hhdMode').checked && cur && !alertOpen && !$('modalRoot').firstChild && !$('tab-scan').hidden && (document.activeElement===document.body || !document.activeElement)) scanInput.focus(); }, 80);
+});
 $('addBtn').addEventListener('click', ()=>{ const v = scanInput.value; scanInput.value=''; handleScan(v); focusScan(); });
 
 function fmtTime(ts){ const d = new Date(ts); return d.toLocaleTimeString('en-IN',{hour12:false}); }
 const SHOW_ROWS = 200;
+function rowHtml(p, idx){
+  const opts = ['','Damaged','Wrong','Torn'].map(r=>'<option value="'+r+'"'+(p.remark===r?' selected':'')+'>'+(r||'-')+'</option>').join('');
+  return '<tr><td>'+idx+'</td><td>'+esc(p.awb)+'</td><td><select class="rsel" data-rm="'+esc(p.awb)+'">'+opts+'</select></td><td>'+fmtTime(p.ts)+'</td><td><button class="x-btn" data-del="'+esc(p.awb)+'" title="Remove">&#10005;</button></td></tr>';
+}
+function addRowFast(p){
+  const n = pending.length;
+  $('mCount').textContent = n;
+  if(p.remark) $('mRem').textContent = pending.filter(x=>x.remark).length;
+  $('pendEmpty').hidden = true;
+  const tb = $('pendBody');
+  tb.insertAdjacentHTML('afterbegin', rowHtml(p, n));
+  while(tb.rows.length > SHOW_ROWS) tb.deleteRow(-1);
+  $('pendNote').textContent = n>SHOW_ROWS ? 'Showing the last ' + SHOW_ROWS + ' AWB; all ' + n + ' will be submitted.' : '';
+}
 function renderPending(){
   const n = pending.length;
   $('mCount').textContent = n;
@@ -649,11 +797,12 @@ $('pendBody').addEventListener('change', e=>{
   focusScan();
 });
 let _dt = null;
-function saveDraft(now){ clearTimeout(_dt); lsSet(LS.draft, JSON.stringify(cur ? {cur, pending} : {})); }
+function draftKey(){ return LS.draft + '_' + (AUTH && AUTH.user ? AUTH.user.id : ''); }
+function saveDraft(now){ clearTimeout(_dt); if(!AUTH) return; lsSet(draftKey(), JSON.stringify(cur ? {cur, pending} : {})); }
 function saveDraftSoon(){ clearTimeout(_dt); _dt = setTimeout(saveDraft, 300); }
 function loadDraft(){
   try{
-    const d = JSON.parse(lsGet(LS.draft,'{}')||'{}');
+    const d = JSON.parse(lsGet(draftKey(),'{}')||'{}');
     if(d && d.cur && d.cur.id && Array.isArray(d.pending)){
       cur = d.cur;
       d.pending.forEach(p=>{ if(p && p.awb && !pendingSet.has(p.awb) && !known.has(p.awb)){ pending.push(p); pendingSet.add(p.awb); } });
@@ -712,10 +861,10 @@ document.addEventListener('click', e=>{
 });
 
 /* ---------- Downloads: CSV / Excel / PDF ---------- */
-const FLAT_HEAD = ['Manifest ID','Manifest Date','Completed At','Seller','Channel','Courier','AWB','Remark','Scan Time','Scanned By'];
+const FLAT_HEAD = ['Manifest ID','Manifest Date','Completed At','Seller','Channel','Courier','AWB','Remark','Scan Time','Scanned By','Status'];
 function flat(manifests){
   const out = [];
-  manifests.forEach(m=> m.rows.forEach(r=> out.push([m.id, m.date, m.completedAt, m.seller, m.channel, m.courier, r.awb, r.remark||'', r.time, m.user])));
+  manifests.forEach(m=> m.rows.forEach(r=> out.push([m.id, m.date, m.completedAt, m.seller, m.channel, m.courier, r.awb, r.remark||'', r.time, m.user, m.status || 'FORWARD'])));
   return out;
 }
 function saveBlob(blob, name){
@@ -735,7 +884,7 @@ function downloadCsv(manifests){
 function downloadXlsx(manifests){
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet([FLAT_HEAD].concat(flat(manifests)));
-  ws['!cols'] = [30,12,20,22,14,16,28,10,10,14].map(w=>({wch:w}));
+  ws['!cols'] = [30,12,20,22,14,16,28,10,10,14,12].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb, ws, 'AWB Data');
   const sum = [['Manifest ID','Manifest Date','Completed At','Seller','Channel','Courier','Total AWB','Remarks','Scanned By']];
   manifests.forEach(m=> sum.push([m.id, m.date, m.completedAt, m.seller, m.channel, m.courier, m.rows.length, m.rows.filter(r=>r.remark).length, m.user]));
@@ -780,6 +929,7 @@ function downloadPdf(manifests){
       // barcode + id (left), dates (right)
       if(bc){ try{ doc.addImage(bc, 'PNG', 10, 20, 90, 12); }catch(e){} }
       doc.setTextColor(20,30,60); doc.setFont('courier','bold'); doc.setFontSize(10); doc.text(m.id, 10, 36.5);
+      if(m.status === 'CANCELLED'){ doc.setTextColor(225,29,72); doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text('CANCELLED - ' + (m.reason || ''), 200, 37, {align:'right', maxWidth:100}); }
       const D = [['Manifest Date', prettyDate(m.date)], ['Scanning Completed', prettyDT(m.completedAt)], ['Scanned By', m.user]];
       D.forEach((r,k)=>{
         doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(100,110,140); doc.text(r[0], 108, 22.5 + k*6);
@@ -837,9 +987,9 @@ $('submitBtn').addEventListener('click', async ()=>{
   stopCamera();
   const btn = $('submitBtn'); btn.disabled = true; btn.textContent = 'Submitting...';
   try{
-    const payload = {scans: pending.map(p=>({awb:p.awb, seller:cur.seller, channel:cur.channel, courier:cur.courier, remark:p.remark, ts:p.ts}))};
+    const payload = {sid: cur.sid || (cur.sid = newSid()), scans: pending.map(p=>({awb:p.awb, seller:cur.seller, channel:cur.channel, courier:cur.courier, remark:p.remark, ts:p.ts}))};
     const r = await gs('submitManifests', payload);
-    r.manifests.forEach(m=> m.rows.forEach(x=> known.add(x.awb)));
+    r.manifests.forEach(m=>{ usedIds.add(m.id); m.rows.forEach(x=> known.add(x.awb)); });
     (r.duplicates||[]).forEach(a=> known.add(a));
     if(!r.manifests.length){
       const d = new Set(r.duplicates||[]);
@@ -857,7 +1007,8 @@ $('submitBtn').addEventListener('click', async ()=>{
 });
 function showResult(r){
   const list = r.manifests.map(m=>`<div class="mid"><span>${esc(m.id)}</span><b>${m.rows.length}</b></div>`).join('');
-  const warn = (r.duplicates && r.duplicates.length) ? `<div class="warnbox">${r.duplicates.length} AWB were already in the sheet and were skipped.</div>` : '';
+  const di = (r.dupInfo || []).slice(0, 15).map(x=>'<div style="font-family:var(--mono);font-size:11px;margin-top:3px">' + esc(x.awb) + ' - already in ' + esc(x.manifest) + (x.user ? ' (' + esc(x.user) + ')' : '') + '</div>').join('');
+  const warn = (r.duplicates && r.duplicates.length) ? `<div class="warnbox"><b>${r.duplicates.length} AWB were already submitted by someone else / earlier and were skipped.</b>${di}</div>` : '';
   const warn2 = (r.invalid && r.invalid.length) ? `<div class="warnbox">${r.invalid.length} AWB were invalid and were skipped.</div>` : '';
   modal(`<h2>Manifest submitted - ${r.saved} AWB</h2>
     <p>Choose a download:</p>${list}${warn}${warn2}
@@ -915,7 +1066,7 @@ async function loadDash(){
     const hoursFull = [];
     for(let h=0; h<24; h++){ const k = ('0'+h).slice(-2); const f = a.hours.find(x=>x.name===k); hoursFull.push({name:k, count:f?f.count:0}); }
     const mt = a.meta || {};
-    const metaHint = `<div class="hint" style="margin-bottom:12px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:10px">Reading from <b>${esc(mt.sheet||'')}</b> - total scans in sheet: <b>${mt.sheetRows||0}</b>${mt.latest ? ' (dates ' + esc(mt.earliest) + ' to ' + esc(mt.latest) + ')' : ''} - in this date range: <b>${a.total}</b>.${(!a.total && mt.sheetRows) ? ' <b style="color:var(--bad)">Data exists on other dates - press "All time" or change the dates.</b>' : ''}</div>`;
+    const metaHint = `<div class="hint" style="margin-bottom:12px;padding:10px 14px;background:#fff;border:1px solid var(--line);border-radius:10px">${AUTH && AUTH.user.role==='USER' ? '<b style="color:#312e81">Showing your own scans only.</b> ' : ''}Reading from <b>${esc(mt.sheet||'')}</b> - total scans in sheet: <b>${mt.sheetRows||0}</b>${mt.latest ? ' (dates ' + esc(mt.earliest) + ' to ' + esc(mt.latest) + ')' : ''} - in this date range: <b>${a.total}</b>.${(!a.total && mt.sheetRows) ? ' <b style="color:var(--bad)">Data exists on other dates - press "All time" or change the dates.</b>' : ''}</div>`;
     const rem = a.remarks.map(r=>`<span class="chip">${esc(r.name)}: <b>${r.count}</b></span>`).join('');
     $('dashBody').innerHTML = metaHint + `
       <div class="kpis">
@@ -947,26 +1098,36 @@ async function loadDash(){
     $('dashStamp').textContent = '';
   }finally{ dashBusy = false; }
 }
-setInterval(()=>{ if(!$('tab-dash').hidden && !document.hidden && $('dFrom').value===TODAY && $('dTo').value===TODAY) loadDash(); }, 60000);
+setInterval(()=>{ if(!$('tab-dash').hidden && !document.hidden && $('dFrom').value===TODAY && $('dTo').value===TODAY) loadDash(); }, 120000);
 
 /* ---------- History / reprint ---------- */
-function groupManifests(rows){
+function groupManifests(rows, cancelled){
   const map = {}, order = [];
+  cancelled = cancelled || {};
   rows.forEach(r=>{
     const id = r[0];
-    if(!map[id]){ map[id] = {id, date:r[1], completedAt:r[9], seller:r[3], channel:r[4], courier:r[5], user:r[8], rows:[]}; order.push(id); }
+    if(!map[id]){
+      const c = cancelled[id];
+      map[id] = {id, date:r[1], completedAt:r[9], seller:r[3], channel:r[4], courier:r[5], user:r[8], rows:[],
+        status: c ? 'CANCELLED' : 'FORWARD', cancelledBy: c ? c.by : '', cancelledAt: c ? c.at : '', reason: c ? c.reason : ''};
+      order.push(id);
+    }
     const m = map[id]; if(r[1] < m.date) m.date = r[1];
     m.rows.push({awb:r[6], remark:r[7], time:r[2], date:r[1]});
   });
   return order.map(id=>map[id]).sort((a,b)=> a.completedAt < b.completedAt ? 1 : -1);
 }
+function canCancel(m){
+  if(!AUTH || m.status === 'CANCELLED') return false;
+  return AUTH.user.role !== 'USER' || (m.user === AUTH.user.id && String(m.completedAt).slice(0,10) === TODAY);
+}
 async function doSearch(){
-  const f = {q:$('hQ').value.trim(), from:$('hFrom').value, to:$('hTo').value, seller:$('hSeller').value, channel:$('hChannel').value, courier:$('hCourier').value};
-  if(!f.q && !f.from && !f.to && !f.seller && !f.channel && !f.courier){ f.from = f.to = TODAY; $('hFrom').value = TODAY; $('hTo').value = TODAY; }
+  const f = {q:$('hQ').value.trim(), from:$('hFrom').value, to:$('hTo').value, seller:$('hSeller').value, channel:$('hChannel').value, courier:$('hCourier').value, user:$('hUser').value, status:$('hStatus').value};
+  if(!f.q && !f.from && !f.to && !f.seller && !f.channel && !f.courier && !f.user && !f.status){ f.from = f.to = TODAY; $('hFrom').value = TODAY; $('hTo').value = TODAY; }
   $('hSummary').textContent = 'Searching...';
   try{
     const r = await gs('searchScans', f);
-    hist = {manifests: groupManifests(r.rows), q: f.q.toUpperCase()};
+    hist = {manifests: groupManifests(r.rows, r.cancelled), q: f.q.toUpperCase(), last: r};
     renderHist(r);
   }catch(e){ $('hSummary').textContent = ''; showFlash('Search failed: ' + e.message, 'dup'); }
 }
@@ -975,25 +1136,174 @@ function renderHist(r){
   $('hEmpty').hidden = ms.length>0; $('hWrap').hidden = !ms.length; $('hAll').hidden = !ms.length;
   if(!ms.length){ $('hEmpty').textContent = 'No data found.'; $('hSummary').textContent = ''; return; }
   $('hSummary').textContent = r.total + ' AWB, ' + ms.length + ' manifest(s) found.' + (r.truncated ? ' (Too much data - only the first ' + r.rows.length + ' AWB were loaded, please narrow the filters.)' : '');
-  $('hBody').innerHTML = ms.map((m,i)=>`
-    <tr><td>${esc(m.id)}</td><td>${esc(m.date)}</td><td>${esc(m.seller)}</td><td>${esc(m.channel)}</td><td>${esc(m.courier)}</td><td class="r"><b>${m.rows.length}</b></td><td>${esc(m.user)}</td>
-    <td><div class="btn-row"><button class="btn sm" data-h="${i}" data-k="view">View</button><button class="btn sm" data-h="${i}" data-k="pdf">PDF</button><button class="btn sm" data-h="${i}" data-k="csv">CSV</button><button class="btn sm" data-h="${i}" data-k="xlsx">Excel</button></div></td></tr>
-    <tr id="hv${i}" hidden><td colspan="8" style="padding:0"><div class="awbs">${m.rows.slice(0,500).map(x=>`<span class="${hist.q && x.awb.indexOf(hist.q)>-1 ? 'hit':''}">${esc(x.awb)}${x.remark?' ['+esc(x.remark)+']':''}</span>`).join('')}${m.rows.length>500?'<span>+'+(m.rows.length-500)+' aur</span>':''}</div></td></tr>`).join('');
+  $('hBody').innerHTML = ms.map((m,i)=>{
+    const st = m.status === 'CANCELLED' ? '<span class="tag-cancel" title="' + esc('Cancelled by ' + m.cancelledBy + ' on ' + m.cancelledAt + ' - ' + m.reason) + '">CANCELLED</span><div class="hint" style="font-size:11px;margin-top:3px">' + esc(m.reason) + '</div>' : '<span class="tag-fwd">FORWARD</span>';
+    const cb = canCancel(m) ? `<button class="btn sm danger" data-h="${i}" data-k="cancel">Cancel</button>` : '';
+    return `
+    <tr class="${m.status==='CANCELLED'?'cancelled':''}"><td>${esc(m.id)}</td><td>${esc(m.date)}</td><td>${esc(m.seller)}</td><td>${esc(m.channel)}</td><td>${esc(m.courier)}</td><td class="r"><b>${m.rows.length}</b></td><td>${esc(m.user)}</td><td>${st}</td>
+    <td><div class="btn-row"><button class="btn sm" data-h="${i}" data-k="view">View</button><button class="btn sm" data-h="${i}" data-k="pdf">PDF</button><button class="btn sm" data-h="${i}" data-k="csv">CSV</button><button class="btn sm" data-h="${i}" data-k="xlsx">Excel</button>${cb}</div></td></tr>
+    <tr id="hv${i}" hidden><td colspan="9" style="padding:0"><div class="awbs">${m.rows.slice(0,500).map(x=>`<span class="${hist.q && x.awb.indexOf(hist.q)>-1 ? 'hit':''}">${esc(x.awb)}${x.remark?' ['+esc(x.remark)+']':''}</span>`).join('')}${m.rows.length>500?'<span>+'+(m.rows.length-500)+' more</span>':''}</div></td></tr>`;
+  }).join('');
+}
+function askCancel(m){
+  modal('<h2>Cancel manifest?</h2><p><b style="font-family:var(--mono)">' + esc(m.id) + '</b><br>' + m.rows.length + ' AWB. Its AWBs become free to scan again, and the manifest moves to the Cancelled Manifest Report.</p><div class="field"><label for="cnReason">Reason (required)</label><input type="text" id="cnReason" maxlength="120" placeholder="e.g. Wrong seller selected"></div><div class="hint" id="cnErr" style="color:var(--bad);margin-top:8px"></div><div class="btn-row" style="margin-top:14px;justify-content:flex-end"><button class="btn" id="cnNo">Keep manifest</button><button class="btn danger" id="cnYes">Cancel manifest</button></div>');
+  $('cnReason').focus();
+  $('cnNo').onclick = closeModal;
+  $('cnYes').onclick = async ()=>{
+    const reason = $('cnReason').value.trim();
+    if(!reason){ $('cnErr').textContent = 'Please enter a reason.'; return; }
+    $('cnYes').disabled = true;
+    try{
+      const r = await gs('cancelManifest', m.id, reason);
+      m.status = 'CANCELLED'; m.cancelledBy = r.cancelledBy; m.cancelledAt = r.cancelledAt; m.reason = r.reason;
+      closeModal(); showFlash('Manifest cancelled: ' + m.id, 'ok');
+      if($('hStatus').value === 'FORWARD'){ hist.manifests = hist.manifests.filter(x=>x!==m); }
+      renderHist(hist.last || {total:0, rows:[]});
+      syncKnown(true);
+    }catch(e){ $('cnErr').textContent = e.message; $('cnYes').disabled = false; }
+  };
 }
 $('hBody').addEventListener('click', e=>{
   const b = e.target.closest('[data-h]'); if(!b) return;
   const m = hist.manifests[+b.dataset.h], k = b.dataset.k;
   if(k==='view'){ const row = $('hv'+b.dataset.h); row.hidden = !row.hidden; return; }
+  if(k==='cancel'){ askCancel(m); return; }
   runDownload(k, [m]);
 });
 $('hAll').addEventListener('click', e=>{ const b = e.target.closest('[data-all]'); if(b) runDownload(b.dataset.all, hist.manifests); });
 $('hGo').addEventListener('click', doSearch);
 $('hQ').addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
 $('hToday').addEventListener('click', ()=>{ $('hFrom').value = TODAY; $('hTo').value = TODAY; doSearch(); });
-$('hReset').addEventListener('click', ()=>{ ['hQ','hFrom','hTo','hSeller','hChannel','hCourier'].forEach(id=> $(id).value=''); hist = {manifests:[],q:''}; $('hWrap').hidden = true; $('hAll').hidden = true; $('hEmpty').hidden = false; $('hEmpty').textContent = 'Search by AWB, date or filters.'; $('hSummary').textContent=''; });
+$('hReset').addEventListener('click', ()=>{ ['hQ','hFrom','hTo','hSeller','hChannel','hCourier','hUser','hStatus'].forEach(id=> $(id).value=''); hist = {manifests:[],q:''}; $('hWrap').hidden = true; $('hAll').hidden = true; $('hEmpty').hidden = false; $('hEmpty').textContent = 'Search by AWB, date or filters.'; $('hSummary').textContent=''; });
+
+/* ---------- Reports ---------- */
+const REPORTS = [
+  {k:'forward',  n:'Forward Manifest Report',        d:'All active (submitted, not cancelled) manifests'},
+  {k:'cancelled',n:'Cancelled Manifest Report',      d:'Cancelled manifests with who, when and why'},
+  {k:'courier',  n:'Courier wise Manifest Report',   d:'Manifests and AWB grouped by courier'},
+  {k:'customer', n:'Customer Wise Manifest Report',  d:'Manifests and AWB grouped by customer (seller)'},
+  {k:'user',     n:'User wise Manifest Report',      d:'Manifests and AWB grouped by the scanning user'}
+];
+let repType = 'forward', repData = null;
+function repName(k){ return REPORTS.filter(r=>r.k===k)[0].n; }
+function renderRepTypes(){
+  $('repTypes').innerHTML = REPORTS.map((r,i)=>`<button type="button" class="rtype${r.k===repType?' on':''}" data-rt="${r.k}"><b>${i+1}</b><span><strong>${esc(r.n)}</strong><small>${esc(r.d)}</small></span></button>`).join('');
+}
+renderRepTypes();
+$('repTypes').addEventListener('click', e=>{
+  const b = e.target.closest('[data-rt]'); if(!b) return;
+  repType = b.dataset.rt; renderRepTypes(); repData = null; $('repBody').innerHTML = ''; $('repMsg').textContent = '';
+  repGenerate();
+});
+$('repPresets').addEventListener('click', e=>{
+  const b = e.target.closest('[data-rp]'); if(!b) return;
+  const p = b.dataset.rp; let f = TODAY, to = TODAY;
+  if(p==='yest'){ f = to = shiftDay(TODAY,-1); } else if(p==='7'){ f = shiftDay(TODAY,-6); } else if(p==='month'){ f = TODAY.slice(0,8)+'01'; }
+  $('rFrom').value = f; $('rTo').value = to; repGenerate();
+});
+$('repGo').addEventListener('click', repGenerate);
+function repGroupLabel(){ return repType==='courier' ? 'Courier' : (repType==='customer' ? 'Customer (Seller)' : 'Scanned By'); }
+function repGroupKey(m){ return repType==='courier' ? m.courier : (repType==='customer' ? m.seller : m.user); }
+function repIsWise(){ return repType==='courier' || repType==='customer' || repType==='user'; }
+function repTotals(list){ return list.reduce((a,m)=>({man:a.man+1, awb:a.awb+m.total, d:a.d+m.damaged, w:a.w+m.wrong, t:a.t+m.torn}), {man:0,awb:0,d:0,w:0,t:0}); }
+function repGroups(){
+  const map = {}, order = [];
+  repData.manifests.forEach(m=>{ const k = repGroupKey(m) || '-'; if(!map[k]){ map[k] = []; order.push(k); } map[k].push(m); });
+  return order.map(k=>({key:k, list:map[k], tot:repTotals(map[k])})).sort((a,b)=> b.tot.awb - a.tot.awb);
+}
+function repCols(){
+  const c = [['Manifest ID','id'],['Manifest Date','date'],['Completed At','completedAt'],['Customer (Seller)','seller'],['Channel','channel'],['Courier','courier'],['AWB','total'],['Damaged','damaged'],['Wrong','wrong'],['Torn','torn'],['Scanned By','user']];
+  if(repType==='cancelled') c.push(['Cancelled By','cancelledBy'],['Cancelled At','cancelledAt'],['Reason','reason']);
+  return c;
+}
+function repRowCells(m){ return repCols().map(c=> m[c[1]]); }
+function repOrdered(){   // manifests in report order (grouped for the "wise" reports)
+  return repIsWise() ? repGroups().reduce((a,g)=> a.concat(g.list), []) : repData.manifests;
+}
+function renderReport(){
+  const d = repData, tot = repTotals(d.manifests);
+  $('repMsg').textContent = '';
+  if(!d.manifests.length){ $('repBody').innerHTML = '<div class="empty card">No manifests found for this report and period.</div>'; return; }
+  const cols = repCols();
+  const head = '<tr>' + cols.map(c=>'<th' + (c[1]==='total'||c[1]==='damaged'||c[1]==='wrong'||c[1]==='torn' ? ' class="r"' : '') + '>' + esc(c[0]) + '</th>').join('') + '</tr>';
+  const rowHtml = m => '<tr' + (m.status==='CANCELLED' ? ' class="cancelled"' : '') + '>' + cols.map(c=>'<td' + (['total','damaged','wrong','torn'].indexOf(c[1])>-1 ? ' class="r"' : '') + '>' + esc(m[c[1]]) + '</td>').join('') + '</tr>';
+  const totRow = (label, x) => '<tr class="tot"><td colspan="6">' + esc(label) + '</td><td class="r">' + x.awb + '</td><td class="r">' + x.d + '</td><td class="r">' + x.w + '</td><td class="r">' + x.t + '</td><td colspan="' + (cols.length-10) + '">' + x.man + ' manifest(s)</td></tr>';
+  let body = '';
+  if(repIsWise()){
+    const gs_ = repGroups();
+    body += '<div class="card panel"><h3>' + esc(repName(repType)) + ' - summary</h3><div class="tbl-wrap"><table><thead><tr><th>' + esc(repGroupLabel()) + '</th><th class="r">Manifests</th><th class="r">AWB</th><th class="r">Damaged</th><th class="r">Wrong</th><th class="r">Torn</th><th class="r">Share</th></tr></thead><tbody>' +
+      gs_.map(g=>'<tr><td><b>' + esc(g.key) + '</b></td><td class="r">' + g.tot.man + '</td><td class="r"><b>' + g.tot.awb + '</b></td><td class="r">' + g.tot.d + '</td><td class="r">' + g.tot.w + '</td><td class="r">' + g.tot.t + '</td><td class="r">' + (tot.awb ? Math.round(g.tot.awb/tot.awb*100) : 0) + '%</td></tr>').join('') +
+      '<tr class="tot"><td>Total</td><td class="r">' + tot.man + '</td><td class="r">' + tot.awb + '</td><td class="r">' + tot.d + '</td><td class="r">' + tot.w + '</td><td class="r">' + tot.t + '</td><td class="r">100%</td></tr></tbody></table></div></div>';
+    body += '<div class="card panel"><h3>Manifest details - by ' + esc(repGroupLabel()) + '</h3><div class="tbl-wrap"><table><thead>' + head + '</thead><tbody>' +
+      gs_.map(g=>'<tr class="grp"><td colspan="' + cols.length + '">' + esc(repGroupLabel()) + ': ' + esc(g.key) + '  -  ' + g.tot.man + ' manifest(s), ' + g.tot.awb + ' AWB</td></tr>' + g.list.map(rowHtml).join('')).join('') +
+      totRow('Grand total', tot) + '</tbody></table></div></div>';
+  }else{
+    body += '<div class="card panel"><h3>' + esc(repName(repType)) + '</h3><div class="tbl-wrap"><table><thead>' + head + '</thead><tbody>' + d.manifests.map(rowHtml).join('') + totRow('Total', tot) + '</tbody></table></div></div>';
+  }
+  const kp = `<div class="kpis"><div class="kpi" style="--k:var(--c4)"><div class="n">${tot.man}</div><div class="l">Manifests</div></div><div class="kpi" style="--k:var(--c1)"><div class="n">${tot.awb}</div><div class="l">Total AWB</div></div><div class="kpi" style="--k:var(--c8)"><div class="n">${tot.d}</div><div class="l">Damaged</div></div><div class="kpi" style="--k:var(--c7)"><div class="n">${tot.w}</div><div class="l">Wrong</div></div><div class="kpi" style="--k:var(--c5)"><div class="n">${tot.t}</div><div class="l">Torn</div></div></div>`;
+  const dl = '<div class="btn-row" style="margin-bottom:12px"><button class="btn primary" data-rd="pdf">Download PDF</button><button class="btn" data-rd="csv">Download CSV</button><button class="btn" data-rd="xlsx">Download Excel</button></div>';
+  $('repBody').innerHTML = '<div class="hint" style="margin-bottom:10px"><b>' + esc(repName(repType)) + '</b> - ' + esc(d.from) + ' to ' + esc(d.to) + '</div>' + kp + dl + body;
+}
+async function repGenerate(){
+  if(!AUTH) return;
+  const f = {type:repType, from:$('rFrom').value || TODAY, to:$('rTo').value || $('rFrom').value || TODAY, seller:$('rSeller').value, channel:$('rChannel').value, courier:$('rCourier').value, user:$('rUser').value};
+  $('repMsg').textContent = 'Generating report...';
+  try{ const r = await gs('getReport', f); r.f = f; repData = r; renderReport(); }
+  catch(e){ $('repMsg').textContent = ''; showFlash('Report failed: ' + e.message, 'dup'); }
+}
+$('repBody').addEventListener('click', e=>{ const b = e.target.closest('[data-rd]'); if(b) repDownload(b.dataset.rd); });
+function istStamp(){ const d = istShift(); return istYmd(d) + ' ' + ('0'+d.getUTCHours()).slice(-2) + ':' + ('0'+d.getUTCMinutes()).slice(-2); }
+function repFileName(ext){ return repName(repType).replace(/[^A-Za-z0-9]+/g,'_') + '_' + repData.from + '_to_' + repData.to + '.' + ext; }
+function repFlat(){
+  const head = (repIsWise() ? [repGroupLabel()] : []).concat(repCols().map(c=>c[0]));
+  const rows = repOrdered().map(m=> (repIsWise() ? [repGroupKey(m)] : []).concat(repRowCells(m)));
+  return [head].concat(rows);
+}
+function repSummaryAoa(){
+  const out = [[repGroupLabel(), 'Manifests', 'AWB', 'Damaged', 'Wrong', 'Torn']];
+  repGroups().forEach(g=> out.push([g.key, g.tot.man, g.tot.awb, g.tot.d, g.tot.w, g.tot.t]));
+  const t = repTotals(repData.manifests); out.push(['Total', t.man, t.awb, t.d, t.w, t.t]);
+  return out;
+}
+function repDownload(kind){
+  try{
+    if(!repData || !repData.manifests.length){ showFlash('Nothing to download.', 'dup'); return; }
+    if(kind==='csv'){
+      const lines = repFlat().map(r=> r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(','));
+      saveBlob(new Blob(['\ufeff'+lines.join('\n')], {type:'text/csv;charset=utf-8'}), repFileName('csv'));
+    }else if(kind==='xlsx'){
+      const wb = XLSX.utils.book_new();
+      if(repIsWise()){ const s = XLSX.utils.aoa_to_sheet(repSummaryAoa()); s['!cols'] = [28,12,10,10,10,10].map(w=>({wch:w})); XLSX.utils.book_append_sheet(wb, s, 'Summary'); }
+      const ws = XLSX.utils.aoa_to_sheet(repFlat()); ws['!cols'] = repFlat()[0].map(()=>({wch:22}));
+      XLSX.utils.book_append_sheet(wb, ws, 'Manifests');
+      XLSX.writeFile(wb, repFileName('xlsx'));
+    }else{
+      const doc = new window.jspdf.jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+      if(typeof doc.autoTable !== 'function'){ showFlash('PDF table library did not load. Check the internet connection and try again.', 'dup'); return; }
+      doc.setFillColor(49,46,129); doc.rect(0,0,297,16,'F'); doc.setFillColor(190,24,93); doc.rect(0,16,297,1.2,'F');
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.text(repName(repType).toUpperCase(), 10, 10.5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.text('Emiza  |  ' + WH, 287, 10, {align:'right'});
+      const fl = repData.f || {}; const flt = [fl.seller && 'Customer: '+fl.seller, fl.channel && 'Channel: '+fl.channel, fl.courier && 'Courier: '+fl.courier, fl.user && 'User: '+fl.user].filter(Boolean).join('   ');
+      doc.setTextColor(60,70,100); doc.setFontSize(8.5); doc.text('Period: ' + repData.from + ' to ' + repData.to + (flt ? '    |    ' + flt : '') + '    |    Generated: ' + istStamp() + ' IST by ' + (AUTH ? AUTH.user.id : ''), 10, 23);
+      const tot = repTotals(repData.manifests);
+      const headSty = {fillColor:[49,46,129], textColor:[255,255,255], fontStyle:'bold'};
+      let y = 27;
+      if(repIsWise()){
+        doc.autoTable({startY:y, head:[[repGroupLabel(),'Manifests','AWB','Damaged','Wrong','Torn']], body:repGroups().map(g=>[g.key,g.tot.man,g.tot.awb,g.tot.d,g.tot.w,g.tot.t]), foot:[['Total',tot.man,tot.awb,tot.d,tot.w,tot.t]], styles:{fontSize:8,cellPadding:1.6}, headStyles:headSty, footStyles:{fillColor:[190,24,93], textColor:[255,255,255], fontStyle:'bold'}, alternateRowStyles:{fillColor:[243,240,255]}, margin:{left:10,right:10}, tableWidth:150});
+        y = doc.lastAutoTable.finalY + 8;
+      }
+      const flat = repFlat();
+      doc.autoTable({startY:y, head:[flat[0]], body:flat.slice(1), foot:[(repIsWise()?['']:[]).concat(['Total','','','','','', tot.awb, tot.d, tot.w, tot.t, tot.man + ' manifest(s)'])], styles:{fontSize:7,cellPadding:1.3,overflow:'linebreak'}, headStyles:headSty, footStyles:{fillColor:[49,46,129], textColor:[255,255,255], fontStyle:'bold'}, alternateRowStyles:{fillColor:[243,240,255]}, margin:{left:10,right:10,bottom:12}, showFoot:'lastPage'});
+      const n = doc.internal.getNumberOfPages();
+      for(let p=1; p<=n; p++){ doc.setPage(p); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(110,120,150); doc.text(repName(repType) + '   |   Page ' + p + ' / ' + n, 287, 205, {align:'right'}); }
+      doc.save(repFileName('pdf'));
+    }
+  }catch(e){ showFlash('Download failed: ' + e.message, 'dup'); }
+}
 
 /* ---------- Settings / Mail ---------- */
 function renderSettings(){
+  if(!initData) return;
   $('sheetInfo').innerHTML = 'Connected: <b>' + esc(initData.sheetName) + '</b> - <a href="' + esc(initData.sheetUrl) + '" target="_blank" rel="noopener" style="color:var(--accent)">Open sheet</a>';
   const hs = $('mHour'); hs.innerHTML = '';
   for(let h=0; h<24; h++){ const o = document.createElement('option'); o.value = h; const hh = h%12===0?12:h%12; o.textContent = hh + ':00 ' + (h<12?'AM':'PM'); hs.appendChild(o); }
@@ -1025,38 +1335,194 @@ document.querySelectorAll('[data-send]').forEach(b=> b.addEventListener('click',
 }));
 
 /* ---------- Init ---------- */
+let knownLast = 2, syncBusy = false, pollN = 0;
+// Keeps this device's duplicate list in step with every other user: only the new rows are fetched (cheap)
+async function syncKnown(full){
+  if(syncBusy || !AUTH) return; syncBusy = true;
+  try{
+    const r = await gs('getKnownAwbs', full ? 0 : knownLast);
+    if(r.full) known = new Set(r.list); else r.list.forEach(a=> known.add(a));
+    knownLast = r.last + 1;
+    setBadge('Connected - ' + known.size + ' AWB');
+  }catch(e){ if(!/Session expired/.test(e.message)) setBadge('Connected (AWB list not loaded)', true); }
+  syncBusy = false;
+}
+setInterval(()=>{ if(AUTH && !document.hidden && !$('tab-scan').hidden){ pollN++; syncKnown(pollN % 5 === 0); } }, 120000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && AUTH) syncKnown(false); });
 function setBadge(t, err){ const b = $('syncBadge'); b.textContent = t; b.className = 'sync' + (err?' err':''); }
-async function boot(){
+function applyMasters(nm){
+  const keep = {selSeller:$('selSeller').value, selChannel:$('selChannel').value, selCourier:$('selCourier').value};
+  M = nm; fillAllMasters();
+  SELS.forEach(id=> setSelect(id, keep[id]));
+  if(cur){ setSelect('selSeller', cur.seller); setSelect('selChannel', cur.channel); setSelect('selCourier', cur.courier); }
+  updateSelHint();
+}
+let booting = false;
+function init(){
   $('whTag').textContent = WH; document.title = 'Return Receiving - ' + WH;
+  $('lgLogo').src = $('logoImg').src;
   $('hhdMode').checked = lsGet(LS.hhd,'0')==='1'; $('soundOn').checked = lsGet(LS.snd,'1')!=='0';
   applyHhd();
-  setBadge('Connecting...');
-  let d;
-  try{ d = await gs('getInit'); }catch(e){ d = {ok:false, error:e.message}; }
-  if(!d.ok){
-    setBadge('Sheet not connected', true);
-    if(d.needSheet){
-      $('setup').hidden = false; $('setup').dataset.lock = '1';
-      ['tab-scan','tab-dash','tab-hist','tab-set'].forEach(id=> $(id).hidden = true);
-    }else{
-      showFlash('Load error: ' + d.error, 'dup');
-    }
+  if(!(window.google && window.google.script) && !apiUrl()){
+    setBadge('Not connected', true); lockUi(true); setLoginMode(false);
+    $('lgBtn').disabled = true; $('lgId').disabled = true; $('lgPw').disabled = true;
+    $('lgErr').textContent = 'This app is not connected to the server yet. The Admin must set API_URL in index.html.';
     return;
   }
-  initData = d; M = d.masters; mailCfg = d.mail; TODAY = d.today;
-  known = new Set(d.awbs);
-  fillAllMasters(); loadDraft(); updateManifestUi(); renderSettings();
-  setPreset('today');
-  setBadge('Sheet connected - ' + known.size + ' AWB');
-  focusScan();
+  startAuth();
 }
-$('setupBtn').addEventListener('click', async ()=>{
-  $('setupErr').textContent = ''; $('setupBtn').disabled = true;
-  try{ await gs('setSheetLink', $('setupUrl').value.trim()); delete $('setup').dataset.lock; $('setup').hidden = true; $('tab-scan').hidden = false; boot(); }
-  catch(e){ $('setupErr').textContent = e.message + ' (This Google account needs edit access to the sheet.)'; }
-  $('setupBtn').disabled = false;
+
+/* ---------- Login / users ---------- */
+let expiredShown = false;
+function lockUi(on){ document.body.classList.toggle('locked', on); $('loginScreen').hidden = !on; }
+function setLoginMode(first){ $('lgLogin').hidden = first; $('lgSetup').hidden = !first; }
+async function showLogin(msg){
+  stopCamera();
+  lockUi(true); $('userBox').hidden = true;
+  $('lgErr').textContent = msg || ''; $('lgPw').value = '';
+  setLoginMode(false);
+  try{
+    const st = await gs('authState');
+    setLoginMode(!st.hasUsers);
+  }catch(e){ if(e.message !== 'API_NOT_SET' && !/Session expired/.test(e.message)) $('lgErr').textContent = e.message; }
+  setTimeout(()=>{ try{ ($('lgSetup').hidden ? $('lgId') : $('suId')).focus(); }catch(e){} }, 50);
+}
+function sessionExpired(){
+  if(expiredShown) return; expiredShown = true;
+  lsSet(LS.auth, 'null'); AUTH = null; clearSessionState(); closeModal();
+  showLogin('Your session expired. Please log in again.');
+  setTimeout(()=>{ expiredShown = false; }, 1500);
+}
+function startAuth(){ if(AUTH && AUTH.token) afterLogin(); else showLogin(''); }
+function afterLogin(){
+  lockUi(false);
+  const u = AUTH.user;
+  $('userChip').textContent = u.id + '  |  ' + u.role;
+  $('userBox').hidden = false;
+  applyRole();
+  booting = false; boot();
+}
+function applyRole(){
+  const r = AUTH.user.role, admin = r === 'ADMIN', staff = r !== 'USER';
+  document.querySelector('[data-tab=set]').hidden = !admin;
+  $('hUserWrap').hidden = !staff; $('rUserWrap').hidden = !staff;
+  if(!admin && !$('tab-set').hidden) openTab('scan');
+}
+function clearSessionState(){
+  try{ saveDraft(); }catch(e){}
+  repData = null; if($('repBody')) $('repBody').innerHTML = '';
+  stopCamera();
+  cur = null; pending = []; pendingSet.clear();
+  SELS.forEach(id=> { $(id).value = ''; });
+  $('selRemark').value = '';
+  initData = null; hist = {manifests:[], q:''};
+  $('hWrap').hidden = true; $('hAll').hidden = true; $('hEmpty').hidden = false; $('hSummary').textContent = '';
+  $('dashBody').innerHTML = '<div class="empty">Loading dashboard...</div>';
+  updateManifestUi();
+  openTab('scan');
+}
+async function doLogin(){
+  const id = $('lgId').value.trim(), pw = $('lgPw').value;
+  if(!id || !pw){ $('lgErr').textContent = 'Enter User ID and password.'; return; }
+  $('lgBtn').disabled = true; $('lgErr').textContent = '';
+  try{ const r = await gs('login', id, pw); AUTH = r; lsSet(LS.auth, JSON.stringify(r)); $('lgId').value=''; $('lgPw').value=''; afterLogin(); }
+  catch(e){ $('lgErr').textContent = e.message; }
+  $('lgBtn').disabled = false;
+}
+async function doSetupAdmin(){
+  const id = $('suId').value.trim(), name = $('suName').value.trim(), pw = $('suPw').value;
+  if(pw !== $('suPw2').value){ $('lgErr').textContent = 'Passwords do not match.'; return; }
+  $('suBtn').disabled = true; $('lgErr').textContent = '';
+  try{ const r = await gs('setupAdmin', id, name || id, pw); AUTH = r; lsSet(LS.auth, JSON.stringify(r)); afterLogin(); }
+  catch(e){ $('lgErr').textContent = e.message; }
+  $('suBtn').disabled = false;
+}
+$('lgBtn').addEventListener('click', doLogin);
+$('suBtn').addEventListener('click', doSetupAdmin);
+['lgId','lgPw'].forEach(id=> $(id).addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); }));
+['suId','suName','suPw','suPw2'].forEach(id=> $(id).addEventListener('keydown', e=>{ if(e.key==='Enter') doSetupAdmin(); }));
+$('logoutBtn').addEventListener('click', async ()=>{
+  const msg = pending.length ? 'Your open manifest and ' + pending.length + ' scanned AWB stay saved on this device and will come back when you log in again.' : 'You will need to log in again.';
+  if(!(await uiConfirm('Logout?', msg, 'Logout'))) return;
+  saveDraft(); lsSet(LS.auth, 'null'); AUTH = null; clearSessionState(); showLogin('');
 });
-window.addEventListener('load', boot);
+$('pwBtn').addEventListener('click', ()=>{
+  modal('<h2>Change password</h2><div class="field" style="margin-top:10px"><label for="cpOld">Current password</label><input type="password" id="cpOld" maxlength="60"></div><div class="field" style="margin-top:10px"><label for="cpNew">New password (min 4 characters)</label><input type="password" id="cpNew" maxlength="60"></div><div class="field" style="margin-top:10px"><label for="cpNew2">Confirm new password</label><input type="password" id="cpNew2" maxlength="60"></div><div class="hint" id="cpErr" style="color:var(--bad);margin-top:8px"></div><div class="btn-row" style="margin-top:14px;justify-content:flex-end"><button class="btn" id="cpNo">Cancel</button><button class="btn primary" id="cpYes">Change</button></div>');
+  $('cpOld').focus();
+  $('cpNo').onclick = closeModal;
+  $('cpYes').onclick = async ()=>{
+    if($('cpNew').value !== $('cpNew2').value){ $('cpErr').textContent = 'New passwords do not match.'; return; }
+    try{ await gs('changePassword', $('cpOld').value, $('cpNew').value); closeModal(); showFlash('Password changed.', 'ok'); }
+    catch(e){ $('cpErr').textContent = e.message; }
+  };
+});
+
+/* ----- user management (Admin) ----- */
+let usersList = [];
+function renderUsers(){
+  $('usersBody').innerHTML = usersList.map(u=>`<tr><td><b>${esc(u.id)}</b></td><td>${esc(u.name)}</td><td><span class="role-tag" style="background:${u.role==='ADMIN'?'#be185d':(u.role==='SUPERVISOR'?'#0f766e':'#3730a3')}">${esc(u.role)}</span></td><td>${u.active?'<span style="color:var(--good);font-weight:700">Active</span>':'<span style="color:var(--bad);font-weight:700">Deactivated</span>'}</td><td>${esc(u.last||'-')}</td><td><div class="btn-row"><button class="btn sm" data-ue="${esc(u.id)}">Edit</button><button class="btn sm ${u.active?'danger':''}" data-ut="${esc(u.id)}">${u.active?'Deactivate':'Activate'}</button></div></td></tr>`).join('') || '<tr><td colspan="6" class="empty">No users</td></tr>';
+}
+async function loadUsers(){
+  try{ usersList = await gs('listUsers'); renderUsers(); }catch(e){ showFlash('Could not load users: ' + e.message, 'dup'); }
+}
+$('usersBody').addEventListener('click', async e=>{
+  const ed = e.target.closest('[data-ue]'), tg = e.target.closest('[data-ut]');
+  if(ed){ const u = usersList.filter(x=>x.id===ed.dataset.ue)[0]; if(!u) return; $('uId').value = u.id; $('uName').value = u.name; $('uRole').value = u.role; $('uPw').value = ''; $('uPw').focus(); }
+  if(tg){
+    const u = usersList.filter(x=>x.id===tg.dataset.ut)[0]; if(!u) return;
+    try{ usersList = await gs('saveUser', {id:u.id, name:u.name, role:u.role, active:!u.active}); renderUsers(); showFlash(u.id + (u.active ? ' deactivated.' : ' activated.'), 'ok'); }
+    catch(err){ showFlash(err.message, 'dup'); }
+  }
+});
+$('uSave').addEventListener('click', async ()=>{
+  const id = $('uId').value.trim(); if(!id){ showFlash('Enter a User ID.', 'dup'); return; }
+  const ex = usersList.filter(x=>x.id===id.toUpperCase())[0];
+  $('uSave').disabled = true;
+  try{
+    usersList = await gs('saveUser', {id, name:$('uName').value.trim(), role:$('uRole').value, password:$('uPw').value, active: ex ? ex.active : true});
+    renderUsers(); showFlash('User saved: ' + id.toUpperCase(), 'ok');
+    $('uId').value=''; $('uName').value=''; $('uPw').value=''; $('uRole').value='USER';
+    loadUserFilter();
+  }catch(e){ showFlash(e.message, 'dup'); }
+  $('uSave').disabled = false;
+});
+$('uClear').addEventListener('click', ()=>{ $('uId').value=''; $('uName').value=''; $('uPw').value=''; $('uRole').value='USER'; });
+async function loadUserFilter(){
+  if(!AUTH || AUTH.user.role === 'USER') return;
+  try{ const l = await gs('userIds'); const c1 = $('hUser').value, c2 = $('rUser').value; fillSelect($('hUser'), l.map(x=>x.id), 'All Users'); fillSelect($('rUser'), l.map(x=>x.id), 'All Users'); $('hUser').value = c1; $('rUser').value = c2; }catch(e){}
+}
+
+async function boot(){
+  if(booting) return; booting = true;
+  setBadge('Connecting...');
+  // instant start from the last saved master lists, refreshed from the server in the background
+  try{ const c = JSON.parse(lsGet(LS.masters,'null')); if(c && c.sellers && c.sellers.length){ M = c; fillAllMasters(); loadDraft(); updateManifestUi(); } }catch(e){}
+  let d;
+  try{ d = await gs('getBoot'); }
+  catch(e){
+    booting = false;
+    if(/Session expired/.test(e.message)) return;
+    setBadge('Offline - tap to retry', true);
+    showFlash('Could not connect: ' + e.message + '  (you can keep scanning; submit works once the connection is back)', 'dup');
+    return;
+  }
+  initData = d; mailCfg = d.mail; TODAY = d.today || TODAY;
+  usedIds = new Set(d.usedIds || []);
+  lsSet(LS.masters, JSON.stringify(d.masters));
+  if(M.sellers.length){ applyMasters(d.masters); } else { M = d.masters; fillAllMasters(); loadDraft(); }
+  if(cur) cur.id = nextManifestId(cur.seller, cur.channel, cur.courier);   // re-check the ID against today's manifests
+  updateManifestUi(); if(AUTH.user.role === 'ADMIN') renderSettings(); setPreset('today');
+  if(!$('rFrom').value){ $('rFrom').value = TODAY; $('rTo').value = TODAY; }
+  setBadge('Connected');
+  loadUserFilter();
+  booting = false;
+  focusScan();
+  // existing AWB list loads in the background; the server re-checks duplicates at submit anyway
+  syncKnown(true);
+}
+$('syncBadge').addEventListener('click', ()=>{ if(/Offline|not loaded/.test($('syncBadge').textContent)){ booting = false; if(AUTH && AUTH.token) boot(); else startAuth(); } });
+window.addEventListener('error', e=>{ try{ setBadge('Script error: ' + (e.message||'').slice(0,60), true); }catch(x){} });
+window.addEventListener('load', init);
 window.addEventListener('beforeunload', ()=>{ saveDraft(); });
 </script>
 </body>

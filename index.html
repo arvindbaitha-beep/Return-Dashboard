@@ -454,7 +454,7 @@
 
 <script>
 /* ===== SETTINGS (edit once) ===== */
-const API_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';   // <-- the Apps Script Web App URL (ends with /exec). Set ONCE here; users never see or type it.
+const API_URL = 'https://script.google.com/macros/s/AKfycbywmz3IJoVrHuxywE_ONNpgZgFlbrnhiFLt9p67tt6Bd_4uES-_jeyfX12lnIwU7lRSlg/exec';   // <-- the Apps Script Web App URL (ends with /exec). Set ONCE here; users never see or type it.
 const DEFAULT_WH = 'Farrukhnagar';
 const CLIENT_VERSION = 'cloud-1';
 // Built-in lists so the Seller / Channel / Courier dropdowns are ALWAYS available, even before the server answers.
@@ -483,7 +483,16 @@ let TODAY = istYmd();
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function apiUrl(){ const u = String(API_URL || '').trim(); return /^https:\/\/script\.google\.com\/(a\/[^\/]+\/)?macros\/s\/[^\s]+\/exec$/.test(u) ? u : ''; }
+function apiProblem(){
+  const u = String(API_URL || '').trim();
+  if(!u || /PASTE_YOUR/i.test(u)) return 'API_URL in index.html is still the placeholder (PASTE_YOUR_WEB_APP_URL_HERE). Replace it with your Web App URL.';
+  if(!/^https:\/\//i.test(u)) return 'API_URL must start with https://';
+  if(!/script\.google(usercontent)?\.com\//i.test(u)) return 'API_URL must be the Apps Script Web App URL (it starts with https://script.google.com/).';
+  if(/\/dev\/?$/i.test(u.split('?')[0])) return 'API_URL ends with /dev (the test URL). Use the deployed Web App URL that ends with /exec.';
+  if(!/\/exec\/?$/i.test(u.split('?')[0])) return 'API_URL must end with /exec.';
+  return '';
+}
+function apiUrl(){ return apiProblem() ? '' : String(API_URL).trim().replace(/\s+/g,''); }
 let AUTH = null;            // {token, user:{id,name,role}}
 try{ AUTH = JSON.parse(lsGet(LS.auth,'null')); }catch(e){ AUTH = null; }
 function rpc(fn, args){
@@ -495,7 +504,7 @@ function rpc(fn, args){
     });
   }
   const url = apiUrl();
-  if(!url) return Promise.reject(new Error('API_NOT_SET'));
+  if(!url){ const er = new Error('Server URL problem: ' + apiProblem()); er.code = 'API_NOT_SET'; return Promise.reject(er); }
   const ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   const limit = (fn==='syncNow' || fn==='submitManifests' || fn==='login' || fn==='setupAdmin' || fn==='ping') ? 180000 : 60000;
   const timer = ctl ? setTimeout(()=> ctl.abort(), limit) : null;
@@ -1378,9 +1387,8 @@ function init(){
   $('hhdMode').checked = lsGet(LS.hhd,'0')==='1'; $('soundOn').checked = lsGet(LS.snd,'1')!=='0';
   applyHhd();
   if(!(window.google && window.google.script) && !apiUrl()){
-    setBadge('Not connected', true); lockUi(true); setLoginMode(false);
-    $('lgBtn').disabled = true; $('lgId').disabled = true; $('lgPw').disabled = true;
-    $('lgErr').textContent = 'This app is not connected to the server yet. The Admin must set API_URL in index.html.';
+    setBadge('Server URL not set', true); lockUi(true); setLoginMode(false);
+    $('lgErr').textContent = apiProblem();
     return;
   }
   startAuth();
@@ -1398,7 +1406,7 @@ async function showLogin(msg){
   try{
     const st = await gs('authState');
     setLoginMode(!st.hasUsers);
-  }catch(e){ if(e.message !== 'API_NOT_SET' && !/Session expired/.test(e.message)) $('lgErr').textContent = e.message; }
+  }catch(e){ if(!/Session expired/.test(e.message)) $('lgErr').textContent = e.message; }
   setTimeout(()=>{ try{ ($('lgSetup').hidden ? $('lgId') : $('suId')).focus(); }catch(e){} }, 50);
 }
 function sessionExpired(){
@@ -1552,6 +1560,11 @@ async function showDiag(deep){
     h += '<div style="margin-top:8px;font-size:11px">Server version: <b>' + esc(r.version) + '</b> &nbsp; App version: <b>' + esc(CLIENT_VERSION) + '</b>' + (r.version !== CLIENT_VERSION ? ' <b style="color:#be123c">- versions differ: deploy Code.gs as a NEW VERSION (Manage deployments - Edit - New version)</b>' : '') + '</div>';
     body.innerHTML = h;
   }catch(e){
+    if(e.code === 'API_NOT_SET'){
+      const cur = String(API_URL || '').trim();
+      body.innerHTML = '<div style="font-weight:800;color:#be123c">The server URL in index.html is not valid</div><div style="margin:8px 0;font-size:13px">' + esc(apiProblem()) + '</div><div style="font-size:12px;margin-bottom:6px">Value found in the app: <span style="font-family:var(--mono)">' + esc(cur.length > 70 ? cur.slice(0,45) + ' ... ' + cur.slice(-18) : (cur || '(empty)')) + '</span></div><div style="font-size:12px">How to fix: open your Apps Script project, press <b>Deploy - Manage deployments</b>, copy the <b>Web app URL</b> (ends with /exec) and paste it between the quotes in<br><span style="font-family:var(--mono)">const API_URL = \'...\';</span><br>near the top of the script in index.html. Then upload index.html again and refresh the page (Ctrl+F5).</div>';
+      return;
+    }
     body.innerHTML = '<div style="font-weight:800;color:#be123c">Cannot reach the server</div><div style="margin:6px 0;font-family:var(--mono);font-size:12px">' + esc(e.message) + '</div><div style="font-size:12px">Check: 1) API_URL in index.html is the latest Web App URL ending with /exec. 2) The Web App is deployed with "Who has access: Anyone". 3) After changing Code.gs you did Manage deployments - Edit - New version. 4) The device has internet.</div>';
   }
 }

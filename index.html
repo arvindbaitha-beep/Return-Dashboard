@@ -74,7 +74,7 @@
   .tag-cancel{font-size:11px;font-weight:800;border-radius:20px;padding:2px 9px;background:#ffe4e6;color:#be123c;}
   .tag-fwd{font-size:11px;font-weight:800;border-radius:20px;padding:2px 9px;background:#dcfce7;color:#166534;}
   tr.cancelled td{background:#fff1f2;}
-  .alert-overlay{z-index:100;background:rgba(127,29,29,.72);}
+  .alert-overlay{z-index:130;background:rgba(127,29,29,.72);}
   .alert-box{border:4px solid #e11d48;text-align:center;max-width:460px;}
   .alert-icon{width:64px;height:64px;margin:0 auto 8px;border-radius:50%;background:#e11d48;color:#fff;font:800 40px var(--sans);display:flex;align-items:center;justify-content:center;}
   .alert-box h2{color:#e11d48;font-size:22px;letter-spacing:.04em;}
@@ -171,7 +171,7 @@
   .sync{font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:20px;background:#dcfce7;color:#166534;font-weight:700;}
   .sync.err{background:#ffe4e6;color:#9f1239;}
 
-  .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(27,36,64,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50;}
+  .overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:110;background:rgba(27,36,64,.55);display:flex;align-items:center;justify-content:center;padding:16px;}
   .modal{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;max-width:520px;width:100%;max-height:90vh;overflow:auto;}
   .modal h2{margin:0 0 6px;font-size:18px;}
   .modal p{color:var(--ink-dim);font-size:13px;margin:6px 0 14px;}
@@ -207,6 +207,7 @@
       <div class="userbox" id="userBox" hidden>
         <span class="userchip" id="userChip"></span>
         <button class="btn sm" id="pwBtn" type="button">Password</button>
+        <button class="btn sm" id="diagBtn" type="button">Check</button>
         <button class="btn sm" id="logoutBtn" type="button">Logout</button>
       </div>
       <span class="sync" id="syncBadge">Loading...</span>
@@ -383,8 +384,10 @@
       <div class="hint" style="margin-top:8px">New user: type a new User ID and a password (min 4 characters). Edit: press Edit on a row, change the fields and Save. Users are deactivated, not deleted, so their old scans keep their User ID.</div>
     </div>
     <div class="card">
-      <h3 style="margin-top:0">Google Sheet</h3>
+      <h3 style="margin-top:0">Data storage</h3>
       <div class="hint" id="sheetInfo"></div>
+      <div class="btn-row" style="margin-top:10px"><button class="btn" id="syncNowBtn" type="button">Sync to Tracker now</button><button class="btn" id="diagBtn2" type="button">Connection check</button></div>
+      <div class="hint" id="syncMsg" style="margin-top:8px"></div>
     </div>
     <div class="card">
       <h3 style="margin-top:0">Auto Mail</h3>
@@ -399,8 +402,8 @@
       <div class="field" style="margin-top:12px"><label for="mInternal">Internal summary (all sellers) - emails separated by comma</label>
         <input type="text" id="mInternal" placeholder="ops@company.com, manager@company.com"></div>
       <div class="card" style="background:#fff7ed;border-color:#fdba74;margin:14px 0 0">
-        <h3 style="margin:0 0 8px;background:linear-gradient(120deg,#9a3412,#c2410c)">Seller email mapping (from your Google Sheet)</h3>
-        <div class="hint">Open the <b>Return_Seller_Emails</b> tab in your Google Sheet. Column A = Seller Name, Column B = Email IDs (separate multiple emails with a comma). Each seller automatically receives only their own summary at the scheduled time. New sellers can also be typed directly in that tab.</div>
+        <h3 style="margin:0 0 8px;background:linear-gradient(120deg,#9a3412,#c2410c)">Seller email mapping (from the Cloud DB sheet)</h3>
+        <div class="hint">Open the <b>Return_Seller_Emails</b> tab of the Cloud DB sheet. Column A = Seller Name, Column B = Email IDs (separate multiple emails with a comma). Each seller automatically receives only their own summary at the scheduled time. New sellers can also be typed directly in that tab (changes are picked up within about 10 minutes).</div>
         <div class="btn-row" style="margin-top:10px"><a class="btn" id="emailTabLink" href="#" target="_blank" rel="noopener" style="text-decoration:none">Open Seller Emails tab</a></div>
       </div>
       <div class="btn-row" style="margin-top:12px"><button class="btn primary" id="mSave">Save mail settings</button></div>
@@ -443,6 +446,7 @@
       <button class="btn primary" id="suBtn" type="button">Create Admin &amp; Login</button>
     </div>
     <div class="hint" id="lgErr" style="color:var(--bad);margin-top:12px;font-weight:700;min-height:18px"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span class="hint" id="lgVer" style="font-size:11px"></span><button class="btn sm" id="lgDiag" type="button">Connection check</button></div>
   </div>
 </div>
 
@@ -450,8 +454,12 @@
 
 <script>
 /* ===== SETTINGS (edit once) ===== */
-const API_URL = 'https://script.google.com/macros/s/AKfycbywmz3IJoVrHuxywE_ONNpgZgFlbrnhiFLt9p67tt6Bd_4uES-_jeyfX12lnIwU7lRSlg/exec';
+const API_URL = 'PASTE_YOUR_WEB_APP_URL_HERE';   // <-- the Apps Script Web App URL (ends with /exec). Set ONCE here; users never see or type it.
 const DEFAULT_WH = 'Farrukhnagar';
+const CLIENT_VERSION = 'cloud-1';
+// Built-in lists so the Seller / Channel / Courier dropdowns are ALWAYS available, even before the server answers.
+// The server's lists (editable by the Admin) replace these as soon as they are loaded.
+const DEFAULT_MASTERS = {"sellers":[{"name":"Honasa-Derma","code":"DERM"},{"name":"Honasa-Bblunt","code":"BBLU"},{"name":"Honasa-Aqua","code":"AQUA"},{"name":"Honasa-ED","code":"HOED"},{"name":"Honasa-Staze","code":"STAZ"},{"name":"Honasa-Pureorigin","code":"PURE"},{"name":"Honasa B2C-Amazon","code":"HAMZ"},{"name":"Honasa B2C-Flipkart","code":"HFLP"},{"name":"Honasa B2C-Myntra","code":"HMYN"},{"name":"Honasa B2C-Meesho","code":"HMSH"},{"name":"Joy Cosmetics (RSH)","code":""},{"name":"All thing","code":""},{"name":"Well Being","code":""},{"name":"Nuuk","code":""},{"name":"Nua Women","code":""},{"name":"Yogabar","code":""},{"name":"Dream Beauty (4th Dpharma)","code":""},{"name":"HOM","code":""},{"name":"GNC","code":""},{"name":"Bellavita","code":""},{"name":"KiWi Kisan","code":""},{"name":"Ionic","code":""},{"name":"Slurrup Farm","code":""},{"name":"Swiss Millitry","code":""},{"name":"Raymond","code":""},{"name":"Mirza Internal","code":""},{"name":"Hexa Trendz","code":""},{"name":"Gem & Pie","code":""},{"name":"Femmela","code":""},{"name":"Pegion","code":""},{"name":"Wicked GUD","code":""},{"name":"Pilgrim","code":""},{"name":"Stailo","code":""},{"name":"Rume Wellbeing","code":""}],"channels":[{"name":"Amazon","code":""},{"name":"Flipkart","code":""},{"name":"Myntra","code":""},{"name":"Meesho","code":""},{"name":"Nykaa","code":""},{"name":"Website","code":""},{"name":"Offline-B2B","code":""},{"name":"Other","code":""}],"couriers":[{"name":"Delhivery","code":""},{"name":"Bluedart","code":""},{"name":"Ecom Express","code":""},{"name":"Xpressbees","code":""},{"name":"DTDC","code":""},{"name":"Shadowfax","code":""},{"name":"Ekart","code":""},{"name":"Amazon Shipping","code":""},{"name":"India Post","code":""},{"name":"Other","code":""}]};
 /* ================================= */
 const QS = new URLSearchParams(window.location.search);
 const WH = (QS.get('wh') || DEFAULT_WH).replace(/[^A-Za-z0-9 _-]/g,'').slice(0,30) || DEFAULT_WH;
@@ -489,13 +497,14 @@ function rpc(fn, args){
   const url = apiUrl();
   if(!url) return Promise.reject(new Error('API_NOT_SET'));
   const ctl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-  const timer = ctl ? setTimeout(()=> ctl.abort(), 120000) : null;
+  const limit = (fn==='syncNow' || fn==='submitManifests' || fn==='login' || fn==='setupAdmin' || fn==='ping') ? 180000 : 60000;
+  const timer = ctl ? setTimeout(()=> ctl.abort(), limit) : null;
   return fetch(url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify({fn:fn, args:args, token:token}), redirect:'follow', signal: ctl ? ctl.signal : undefined})
     .then(r=> r.text())
     .then(txt=>{
       try{ return JSON.parse(txt); }catch(e){ throw new Error('Server reply was not valid. Deploy the Web App with access = "Anyone" and use the /exec URL.'); }
     })
-    .catch(e=>{ throw new Error(e && e.name==='AbortError' ? 'Server timed out' : (e && e.message==='Failed to fetch' ? 'Cannot reach the server - check internet and the Web App URL' : e.message)); })
+    .catch(e=>{ throw new Error(e && e.name==='AbortError' ? 'Server did not answer in time' : (e && e.message==='Failed to fetch' ? 'Cannot reach the server - check internet and the Web App URL' : e.message)); })
     .then(v=>{ if(timer) clearTimeout(timer); return v; }, e=>{ if(timer) clearTimeout(timer); throw e; });
 }
 function gs(fn, ...args){
@@ -1304,7 +1313,9 @@ function repDownload(kind){
 /* ---------- Settings / Mail ---------- */
 function renderSettings(){
   if(!initData) return;
-  $('sheetInfo').innerHTML = 'Connected: <b>' + esc(initData.sheetName) + '</b> - <a href="' + esc(initData.sheetUrl) + '" target="_blank" rel="noopener" style="color:var(--accent)">Open sheet</a>';
+  const sy = initData.sync;
+  const syTxt = !sy ? 'No background sync has run yet (it starts within 5 minutes of the first scan).' : (sy.ok ? 'Last background sync to the Tracker: <b>' + esc(sy.at) + '</b> (+' + (sy.scansAdded||0) + ' scans, ' + (sy.scansTotal||0) + ' in total).' : '<b style="color:var(--bad)">Last sync failed (' + esc(sy.at) + '): ' + esc(sy.error||'') + '</b> - it retries automatically.');
+  $('sheetInfo').innerHTML = 'All users work on the fast <b>Cloud DB</b> (<a href="' + esc(initData.sheetUrl) + '" target="_blank" rel="noopener" style="color:var(--accent)">open</a>). Every few minutes the data is copied in the background to the permanent <b>Google Tracker</b> (<a href="' + esc(initData.trackerUrl||'#') + '" target="_blank" rel="noopener" style="color:var(--accent)">open</a>).<br>' + syTxt;
   const hs = $('mHour'); hs.innerHTML = '';
   for(let h=0; h<24; h++){ const o = document.createElement('option'); o.value = h; const hh = h%12===0?12:h%12; o.textContent = hh + ':00 ' + (h<12?'AM':'PM'); hs.appendChild(o); }
   $('mEnabled').checked = !!mailCfg.enabled; $('mHour').value = mailCfg.hour; $('mWhich').value = mailCfg.which || 'today';
@@ -1359,6 +1370,9 @@ function applyMasters(nm){
 }
 let booting = false;
 function init(){
+  try{ const c = JSON.parse(lsGet(LS.masters,'null')); M = (c && c.sellers && c.sellers.length) ? c : DEFAULT_MASTERS; }catch(e){ M = DEFAULT_MASTERS; }
+  fillAllMasters();
+  $('lgVer').textContent = 'App version ' + CLIENT_VERSION;
   $('whTag').textContent = WH; document.title = 'Return Receiving - ' + WH;
   $('lgLogo').src = $('logoImg').src;
   $('hhdMode').checked = lsGet(LS.hhd,'0')==='1'; $('soundOn').checked = lsGet(LS.snd,'1')!=='0';
@@ -1495,21 +1509,22 @@ async function loadUserFilter(){
 async function boot(){
   if(booting) return; booting = true;
   setBadge('Connecting...');
-  // instant start from the last saved master lists, refreshed from the server in the background
-  try{ const c = JSON.parse(lsGet(LS.masters,'null')); if(c && c.sellers && c.sellers.length){ M = c; fillAllMasters(); loadDraft(); updateManifestUi(); } }catch(e){}
+  loadDraft(); updateManifestUi();          // dropdowns are already filled from the built-in / saved lists
+  const slow = setTimeout(()=>{ setBadge('Server is slow - tap for connection check', true); }, 12000);
   let d;
   try{ d = await gs('getBoot'); }
   catch(e){
-    booting = false;
+    clearTimeout(slow); booting = false;
     if(/Session expired/.test(e.message)) return;
-    setBadge('Offline - tap to retry', true);
+    setBadge('Offline - tap for connection check', true);
     showFlash('Could not connect: ' + e.message + '  (you can keep scanning; submit works once the connection is back)', 'dup');
     return;
   }
-  initData = d; mailCfg = d.mail; TODAY = d.today || TODAY;
+  clearTimeout(slow);
+  initData = d; mailCfg = d.mail || {}; TODAY = d.today || TODAY;
   usedIds = new Set(d.usedIds || []);
   lsSet(LS.masters, JSON.stringify(d.masters));
-  if(M.sellers.length){ applyMasters(d.masters); } else { M = d.masters; fillAllMasters(); loadDraft(); }
+  applyMasters(d.masters);
   if(cur) cur.id = nextManifestId(cur.seller, cur.channel, cur.courier);   // re-check the ID against today's manifests
   updateManifestUi(); if(AUTH.user.role === 'ADMIN') renderSettings(); setPreset('today');
   if(!$('rFrom').value){ $('rFrom').value = TODAY; $('rTo').value = TODAY; }
@@ -1520,7 +1535,36 @@ async function boot(){
   // existing AWB list loads in the background; the server re-checks duplicates at submit anyway
   syncKnown(true);
 }
-$('syncBadge').addEventListener('click', ()=>{ if(/Offline|not loaded/.test($('syncBadge').textContent)){ booting = false; if(AUTH && AUTH.token) boot(); else startAuth(); } });
+
+/* ---------- Connection check ---------- */
+async function showDiag(deep){
+  modal('<h2>Connection check</h2><div class="hint" id="dgBody">Checking the server... (the very first check after a new deploy can take up to a minute)</div><div class="btn-row" style="margin-top:14px;justify-content:flex-end"><button class="btn" id="dgDeep">Also test the Tracker sheet</button><button class="btn" id="dgRetry">Retry connection</button><button class="btn primary" id="dgClose">Close</button></div>');
+  $('dgClose').onclick = closeModal;
+  $('dgDeep').onclick = ()=>{ showDiag(true); };
+  $('dgRetry').onclick = ()=>{ closeModal(); booting = false; if(AUTH && AUTH.token) boot(); else startAuth(); };
+  const body = $('dgBody');
+  try{
+    const t0 = Date.now();
+    const r = await gs('ping', !!deep);
+    const total = Date.now() - t0;
+    let h = '<div style="font-weight:800;color:' + (r.ok ? '#166534' : '#be123c') + ';margin-bottom:8px">' + (r.ok ? 'Everything is working' : 'A step failed - see below') + ' (round trip ' + total + ' ms)</div>';
+    h += r.steps.map(s=>'<div style="padding:4px 0;border-bottom:1px solid var(--line)"><b style="color:' + (s.ok ? '#166534' : '#be123c') + '">' + (s.ok ? 'OK' : 'FAILED') + '</b> &nbsp;' + esc(s.name) + ' <span style="color:var(--ink-dim)">(' + s.ms + ' ms)</span><div style="font-size:11px;font-family:var(--mono);color:var(--ink-dim)">' + esc(s.info) + '</div></div>').join('');
+    h += '<div style="margin-top:8px;font-size:11px">Server version: <b>' + esc(r.version) + '</b> &nbsp; App version: <b>' + esc(CLIENT_VERSION) + '</b>' + (r.version !== CLIENT_VERSION ? ' <b style="color:#be123c">- versions differ: deploy Code.gs as a NEW VERSION (Manage deployments - Edit - New version)</b>' : '') + '</div>';
+    body.innerHTML = h;
+  }catch(e){
+    body.innerHTML = '<div style="font-weight:800;color:#be123c">Cannot reach the server</div><div style="margin:6px 0;font-family:var(--mono);font-size:12px">' + esc(e.message) + '</div><div style="font-size:12px">Check: 1) API_URL in index.html is the latest Web App URL ending with /exec. 2) The Web App is deployed with "Who has access: Anyone". 3) After changing Code.gs you did Manage deployments - Edit - New version. 4) The device has internet.</div>';
+  }
+}
+$('lgDiag').addEventListener('click', ()=> showDiag(false));
+$('diagBtn').addEventListener('click', ()=> showDiag(false));
+$('syncBadge').addEventListener('click', ()=>{ if(/Offline|slow|not loaded|Not connected/.test($('syncBadge').textContent)) showDiag(false); });
+$('syncNowBtn').addEventListener('click', async ()=>{
+  $('syncNowBtn').disabled = true; $('syncMsg').textContent = 'Syncing to the Tracker... (can take a minute)';
+  try{ const r = await gs('syncNow'); if(initData) initData.sync = r.skipped||r.busy ? initData.sync : r; $('syncMsg').textContent = r.busy ? 'A sync is already running.' : (r.ok === false ? 'Sync failed: ' + r.error : 'Sync done. +' + (r.scansAdded||0) + ' scans.'); renderSettings(); }
+  catch(e){ $('syncMsg').textContent = 'Sync failed: ' + e.message; }
+  $('syncNowBtn').disabled = false;
+});
+$('diagBtn2').addEventListener('click', ()=> showDiag(false));
 window.addEventListener('error', e=>{ try{ setBadge('Script error: ' + (e.message||'').slice(0,60), true); }catch(x){} });
 window.addEventListener('load', init);
 window.addEventListener('beforeunload', ()=>{ saveDraft(); });
